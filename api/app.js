@@ -5,22 +5,29 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 const config = require('./config');
-const MongoClient = require('mongodb').MongoClient;
+const mongoClient = require('monggose');
 const cors = require('cors');
+
+const userModelSchema = mongoClient.model('Users', userModelSchema)/////////////////
 
 var indexRouter = require('./routes/index');
 //var usersRouter = require('./routes/users');
 
 var app = express();
 
-MongoClient.connect(`mongodb://${config.dbHost}`, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoClient.Promise = global.Promise;
+mongoClient.connect(`mongodb://${config.dbHost}`, { 
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useMongoClient: true })
   .then(client => {
     const db = client.db(config.dbName);
     const collection = db.collection(config.dbCollection);    
     app.locals[config.dbCollection] = collection;
+    console.log("Conectado a Base de Dados: " + config.dbName);
   })
   .catch(error => {
-    console.log(error);
+    console.log("Erro ao se conectar ao BD: " + error);
   });
 
 // view engine setup
