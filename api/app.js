@@ -8,20 +8,19 @@ const config = require('./config');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+// Variáveis das Rotas
 var indexRouter = require('./routes/index');
-//var usersRouter = require('./routes/users');
+var usuariosRouter = require('./routes/usuarios');
+var contratosRouter = require('./routes/contratos');
 
 var app = express();
 
 mongoose.Promise = global.Promise;
 mongoose.connect(`mongodb://${config.dbHost}/${config.dbName}`, { 
     useNewUrlParser: true,
-    useUnifiedTopology: true})
+    useUnifiedTopology: true,
+    useFindAndModify: false}) // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
   .then(client => {
-    //const db = client.db(config.dbName);
-    //const collection = db.collection(config.dbCollection);    
-    //app.locals[config.dbCollection] = collection;
-    ////app.locals[config.dbCollection] = config.dbCollection;
     console.log("Conectado a Base de Dados: " + config.dbName);
   })
   .catch(error => {
@@ -45,8 +44,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Configuração das Rotas
 app.use('/', indexRouter);
-//app.use('/users', usersRouter);
+app.use('/usuarios', usuariosRouter);
+app.use('/contratos', contratosRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-
 /**
  * Module dependencies.
  */
@@ -15,7 +14,7 @@ var http = require('http');
  */
 
 var port = normalizePort(process.env.PORT || `${config.dbPort}`);
-app.set('port', port);
+app.set('porta', port);
 
 /**
  * Create HTTP server.
@@ -27,9 +26,9 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+server.listen(config.dbPort);
+server.on('erro', onError);
+server.on('escutando', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -56,24 +55,20 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-  if (error.syscall !== 'listen') {
+  if (error.syscall !== 'escutando') {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Porta ' + port;
+  var bind = typeof port === 'string' ? 'Pipe ' + port : 'Porta ' + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
       console.error(bind + ' requer elevação de privilégios');
       process.exit(1);
-      break;
     case 'EADDRINUSE':
       console.error(bind + ' já esta em uso');
       process.exit(1);
-      break;
     default:
       throw error;
   }
@@ -88,5 +83,5 @@ function onListening() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'porta ' + addr.port;
-  debug('Listening on ' + bind);
+  debug('Escultando em: ' + bind);
 }

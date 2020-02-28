@@ -1,7 +1,7 @@
 const mongoose = require('mongoose') // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const validator = require('validator') // Classe usada para validações de dados
 
-const userSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mongoDB
+const usuarioSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mongoDB
     nome: { type: String, require: true },
     sobreNome: { type: String, require: true },
     email: { type: String, 
@@ -13,4 +13,4 @@ const userSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mon
     permissionLevel: { type: Number, require: true}
 })
 
-module.exports = mongoose.model('Users', userSchema) // Exporta ao objeto criado na primeira vez o modelo criado
+module.exports = mongoose.model('Usuario', usuarioSchema) // Exporta ao objeto criado na primeira vez o modelo criado
