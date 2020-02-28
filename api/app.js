@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 const config = require('./config');
-const mongoClient = require('mongoose');
+const mongoose = require('mongoose');
 const cors = require('cors');
 
 var indexRouter = require('./routes/index');
@@ -13,14 +13,15 @@ var indexRouter = require('./routes/index');
 
 var app = express();
 
-mongoClient.Promise = global.Promise;
-mongoClient.connect(`mongodb://${config.dbHost}`, { 
+mongoose.Promise = global.Promise;
+mongoose.connect(`mongodb://${config.dbHost}/${config.dbName}`, { 
     useNewUrlParser: true,
     useUnifiedTopology: true})
   .then(client => {
-    const db = client.db(config.dbName);
-    const collection = db.collection(config.dbCollection);    
-    app.locals[config.dbCollection] = collection;
+    //const db = client.db(config.dbName);
+    //const collection = db.collection(config.dbCollection);    
+    //app.locals[config.dbCollection] = collection;
+    ////app.locals[config.dbCollection] = config.dbCollection;
     console.log("Conectado a Base de Dados: " + config.dbName);
   })
   .catch(error => {

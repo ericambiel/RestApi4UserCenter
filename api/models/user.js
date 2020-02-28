@@ -13,4 +13,4 @@ const userSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mon
     permissionLevel: { type: Number, require: true}
 })
 
-module.exports = mongoose.model('User', userSchema) // Exporta ao objeto criado na primeira vez o modelo criado
+module.exports = mongoose.model('Users', userSchema) // Exporta ao objeto criado na primeira vez o modelo criado

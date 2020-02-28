@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
+    "debug": "nodemon --inspect ./bin/www",
     "test": "echo \\\"Erro: não há testes especificados\\\" && exit 1"
   },
   "repository": {
