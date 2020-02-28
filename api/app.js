@@ -5,10 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 const config = require('./config');
-const mongoClient = require('monggose');
+const mongoClient = require('mongoose');
 const cors = require('cors');
-
-const userModelSchema = mongoClient.model('Users', userModelSchema)/////////////////
 
 var indexRouter = require('./routes/index');
 //var usersRouter = require('./routes/users');
@@ -18,8 +16,7 @@ var app = express();
 mongoClient.Promise = global.Promise;
 mongoClient.connect(`mongodb://${config.dbHost}`, { 
     useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useMongoClient: true })
+    useUnifiedTopology: true})
   .then(client => {
     const db = client.db(config.dbName);
     const collection = db.collection(config.dbCollection);    

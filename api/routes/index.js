@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
-const ObjectID = require('mongodb').ObjectID;
+
+const ObjectID = require('mongoose').ObjectID;
+
+const UserModel = require('../models/user');
 
 /** Listar Contratos */ 
 router.get('/contratos', (req, res, next) => {
@@ -57,6 +60,23 @@ router.delete('/contratos/:id', (req, res, next) => {
   req.collection.deleteOne({ _id })
     .then(result => res.json(result)) // Envia Resultados das mudanças
     .catch(error => res.send(error)); // Caso contrario envia menssagem de erro
+});
+
+/** Inserir usuario */
+router.post('/user', (req, res, next) => {
+  const { nome, sobreNome, email, password, permissionLevel } = req.body;
+  
+  const user = new UserModel({
+    nome: nome, 
+    sobreNome: sobreNome, 
+    email: email, 
+    password: password, 
+    permissionLevel: permissionLevel
+  })
+
+  user.save()
+    .then(result => res.json(result))
+    .catch(error => res.send(error));
 });
 
 module.exports = router;
