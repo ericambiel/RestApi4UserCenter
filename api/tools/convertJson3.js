@@ -17,7 +17,6 @@ const secondArr = [
     }]
   ;
 
-
 const merged = {
     ...firstArr, ...secondArr[0],
     //id: { ...firstArr.id, ...secondArr.id},

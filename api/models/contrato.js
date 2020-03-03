@@ -15,13 +15,13 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     valMensal: { type: Number },
     dataInicio: { type: Date },
     dataFim: { type: Date },
-    deptoPartList: { type : [ Departamento ] }, // Lista de Departamentos associados
+    deptoPartList: { type : [ { Departamento } ] }, // Lista de Departamentos associados
     indReajuste: { type: String },
     diaAntecedencia: { type: Number },  // Dias de antecedencia
     obs: { type: String },
     historico: { type: String },
     anaJuridico: { type: Boolean },     // Analise juridica
-    documentoList: { type : [ Documento ] }   // Mudar diretorio
+    documentoList: { type : [ { Documento } ] }   // Mudar diretorio
 }, {collection: 'Contratos'});
 
 // Objeto sem segmentação por classes
