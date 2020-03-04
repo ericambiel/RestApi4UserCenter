@@ -1,5 +1,16 @@
+// /**
+//  * Esta é uma função de exemplo de uso de JSDoc
+//  * 
+//  * @example 
+//  *   exemplo(3, 5); // 8
+//  * 
+//  * @param   {Number} obrigatorio   Parametro obrigatório
+//  * @param   {Number} [opcional]    Parametro ocional. Note os '[ ]'
+//  * @returns {Number}
+//  */
 //const _ = require('./node_modules/lodash');
 //const deepmerge = require ('deepmerge')
+
 
 const schemaJSONMaker = require('json-schema-defaults'); // Biblioteca para formar schemas JSON
 
@@ -44,99 +55,192 @@ function syncReadFileToJSON() {
 // Schema do novo JSON
 const contratoSchema = schemaJSONMaker({
     "type" : "object",
-        "properties" : {
-            "id": { "type": "number" },
-            "objeto": { "type": "string" },
-            "estabFiscal": { "type": "string" },
-            "parceiro": { "type": "string" },
-            "cnpj": { "type": "number" },
-            "status": { "type": "string" },
-            "situacao": { "type": "string" },
-            "valTotal": { "type": "number" },
-            "valMensal": { "type": "number" },
-            "dataInicio": { "type": "date" },
-            "dataFim": { "type": "date" },
-            "deptoPartList": { "type": [ {"departamento": { "type": "string" } } ] },
-            "indReajuste": { "type": "string" },
-            "diaAntecedencia": { "type": "number" },
-            "obs": { "type": "string" },
-            "historico": { "type": "string" },
-            "anaJuridico": { "type": "boolean" },
-            "documentoList": { "type" : [ 
-                                      { "nome": { "type": "string" } },
-                                      { "diretorio": { "type": "string" } },
-                                      { "tipo": { "type": "string" } },
-                                      { "numAditivo": { "type": "number" } },
-                                      { "dataInsert": { "type": "date" } } 
+    "properties" : {
+        "id": { "type": "number" },
+        "objeto": { "type": "string" },
+        "estabFiscal": { "type": "string" },
+        "parceiro": { "type": "string" },
+        "cnpj": { "type": "number" },
+        "status": { "type": "string" },
+        "situacao": { "type": "string" },
+        "valTotal": { "type": "number" },
+        "valMensal": { "type": "number" },
+        "dataInicio": { "type": "date" },
+        "dataFim": { "type": "date" },
+        "deptoPartList": { "type": [ {"departamento": { "type": "string" } } ] },
+        "indReajuste": { "type": "string" },
+        "diaAntecedencia": { "type": "number" },
+        "obs": { "type": "string" },
+        "historico": { "type": "string" },
+        "anaJuridico": { "type": "boolean" },
+        "documentoList": { "type" : [ 
+                                        { "nome": { "type": "string" } },
+                                        { "diretorio": { "type": "string" } },
+                                        { "tipo": { "type": "string" } },
+                                        { "numAditivo": { "type": "number" } },
+                                        { "dataInsert": { "type": "date" } } 
                                     ] 
-                           }
+                        }
         } 
 });
+
+const documentoListSchema = schemaJSONMaker({
+    "type" : "object",
+    "properties" : {
+        "documentoList": { "type" : [ 
+                                        { "nome": { "type": "string" } },
+                                        { "diretorio": { "type": "string" } },
+                                        { "tipo": { "type": "string" } },
+                                        { "numAditivo": { "type": "number" } },
+                                        { "dataInsert": { "type": "date" } } 
+                                    ] 
+                         }
+    }
+})
+
+const deptoPartListSchema = schemaJSONMaker({
+    "type" : "object",
+    "properties" : {
+        "deptoPartList": { "type": [ {"departamento": { "type": "string" } } ] },
+    }
+})
 
 //importedJSON[5][0]["nome"]
 const importedJSON = syncReadFileToJSON();
 
 function matchJSONValues(){
-    // Cria objeto com os valores indicados
-    const i = 1
-    if (importedJSON[i] != null){
-        var contrato = Object.create(contratoSchema, { 
-            id: { value: i },
-            objeto: { value: importedJSON[i][0]["objeto"] },
-            estabFiscal: { value: importedJSON[i][0]["estabFiscal"] },
-            parceiro: { value: importedJSON[i][0]["parceiro"] },
-            cnpj: { value: importedJSON[i][0]["cnpj"] },
-            status: { value: importedJSON[i][0]["status"] },
-            situacao: { value: importedJSON[i][0]["situacao"] },
-            valTotal: { value: importedJSON[i][0]["valTotal"] },
-            dataInicio: { value: importedJSON[i][0]["dataInicio"] },
-            dataFim: { value: importedJSON[i][0]["dataFim"] },
-            deptoPartList: { value: getDepartamentoList(i) },
-            indReajuste: { value: importedJSON[i][0]["indReajuste"] },
-            diaAntecedencia: { value: importedJSON[i][0]["diaAntecedencia"] },
-            obs: { value: importedJSON[i][0]["obs"] },
-            historico: { value: importedJSON[i][0]["historico"] },
-            anaJuridico: { value: importedJSON[i][0]["anaJuridico"] },
-            obs: { value: importedJSON[i][0]["obs"] },
-            documentoList: { value: getDocumentoList(i)  }
-        });
+//    Cria objeto com os valores indicados
+    const indexContrato = 1
+    if (importedJSON[indexContrato] != null){
+        var contrato = Object.create(contratoSchema)//, { 
+        //     id: { value: indexContrato },
+        //     //id: { value: importedJSON[indexContrato] },
+        //     objeto: { value: importedJSON[indexContrato][0]["objeto"] },
+        //     estabFiscal: { value: importedJSON[indexContrato][0]["estabFiscal"] },
+        //     parceiro: { value: importedJSON[indexContrato][0]["parceiro"] },
+        //     cnpj: { value: importedJSON[indexContrato][0]["cnpj"] },
+        //     status: { value: importedJSON[indexContrato][0]["status"] },
+        //     situacao: { value: importedJSON[indexContrato][0]["situacao"] },
+        //     valTotal: { value: importedJSON[indexContrato][0]["valTotal"] },
+        //     dataInicio: { value: importedJSON[indexContrato][0]["dataInicio"] },
+        //     dataFim: { value: importedJSON[indexContrato][0]["dataFim"] },
+        //     deptoPartList: { value: getDepartamentoList(importedJSON, indexContrato) },
+        //     indReajuste: { value: importedJSON[indexContrato][0]["indReajuste"] },
+        //     diaAntecedencia: { value: importedJSON[indexContrato][0]["diaAntecedencia"] },
+        //     obs: { value: importedJSON[indexContrato][0]["obs"] },
+        //     historico: { value: importedJSON[indexContrato][0]["historico"] },
+        //     anaJuridico: { value: importedJSON[indexContrato][0]["anaJuridico"] },
+        //     obs: { value: importedJSON[indexContrato][0]["obs"] },
+        //     documentoList: { value: getDocumentoList(importedJSON, indexContrato)  }
+        // });
+        contrato.id = indexContrato;
+        contrato.objeto = importedJSON[indexContrato][0]["objeto"];
+        contrato.estabFiscal = importedJSON[indexContrato][0]["estabFiscal"];
+        contrato.parceiro = importedJSON[indexContrato][0]["parceiro"];
+        contrato.cnpj = importedJSON[indexContrato][0]["cnpj"];
+        contrato.status = importedJSON[indexContrato][0]["status"];
+        contrato.situacao = importedJSON[indexContrato][0]["situacao"];
+        contrato.valTotal = importedJSON[indexContrato][0]["valTotal"];
+        contrato.dataInicio = importedJSON[indexContrato][0]["dataInicio"];
+        contrato.dataFim = importedJSON[indexContrato][0]["dataFim"];
+        contrato.deptoPartList = getDepartamentoList(importedJSON, indexContrato);
+        contrato.indReajuste = importedJSON[indexContrato][0]["indReajuste"];
+        contrato.diaAntecedencia = importedJSON[indexContrato][0]["diaAntecedencia"];
+        contrato.obs = importedJSON[indexContrato][0]["obs"];
+        contrato.historico = importedJSON[indexContrato][0]["historico"];
+        contrato.anaJuridico = importedJSON[indexContrato][0]["anaJuridico"];
+        contrato.obs = importedJSON[indexContrato][0]["obs"];
+        contrato.documentoList = getDocumentoList(importedJSON, indexContrato);
 
+        console.log(Object.getPrototypeOf(contrato));
         const print = JSON.stringify(contrato);
- //       console.log(contrato.documentoList);
-        console.log(print);
-    } else console.log("Index: [" + i + "] não encontrado");
+//        console.log(contrato.documentoList);
+        console.log(contrato);
+    } else console.log("Index: [" + indexContrato + "] não encontrado");
+
+//     let contacts = {
+//         name: "Timothy",
+//         age: 35
+//     }
+
+//     let testeObj = Object.create(contratoSchema);
+//     testeObj.obs = "Ambiel";
+//     testeObj.estabFiscal = "Unidade1"
+//     // testeObj.age = 20;
+    
+//  //   console.log(contacts);
+//     console.log(testeObj);
+//     console.log(Object.getPrototypeOf(testeObj));
+//  //   Object.setPrototypeOf(testeObj, Number)
+//     console.log(JSON.stringify(Object.values(testeObj)));
+
 }
 
-function getDepartamentoList (index){
-    var departamentoList = [];
+/**
+ * Retrona objeto com lista de departamentos associados contrato.
+ *
+ * @param {Object} objDeBusca Array de Objetos contendo contratos
+ * @param {Number} indexContrato Índice do contrato a ser pesquisado dentro do Array de Objetos
+ * @returns {Object} Novo objeto formado com item pesquisado
+ */
+function getDepartamentoList (objDeBusca, indexContrato){
+    var objFormado = [];
 
-    for ( var j = 0; j < importedJSON[index].length; j++ ){
-        if ( departamentoList.indexOf(importedJSON[index][j]["deptoPartList"]) === -1) { //Verificar funcionamento do IndexOf
-            departamentoList.push(
-                Object.create( { departamento: { value: importedJSON[index][j]["deptoPartList"] } } )
+    for ( var i = 0; i < objDeBusca[indexContrato].length; i++ ){
+        // if ( departamentoList.indexOf(importedJSON[index][j]["deptoPartList"]) === -1) {
+        if ( getKeyByValue(objFormado, "departamento", objDeBusca[indexContrato][i]["deptoPartList"]) === -1) { // Verifica se o valor existe antes de criar o objeto e coloca-lo a lista
+            objFormado.push( // Adiciona a lista um novo objeto com o valor encontrado
+                Object.create(deptoPartListSchema, { departamento: { value: objDeBusca[indexContrato][i]["deptoPartList"] } } )
             );
         }  
     }
-    return departamentoList;
+    return objFormado;
 }
 
-function getDocumentoList (index) {
-    //const length = Object.keys(importedJSON[index].length); // Verifica quantidade do array do objeto
-    var documentoList = [];
-
-    for ( var j = 0; j < importedJSON[index].length; j++ ){
-        documentoList.push(
-            Object.create( { nome: { value: importedJSON[index][j]["nome"] } ,
-                               diretorio: { value: importedJSON[index][j]["diretorio"] },
-                               tipo: { value: "" } ,
-                               numAditivo: { value: importedJSON[index][j]["numAditivo"] } ,
-                               dataInsert: { value: importedJSON[index][j]["dataInsert"] }
-            } )
-        );
-        
+/**
+ * Retorna objeto com lista documentos associados ao contrato.
+ *
+ * @param {Object} objDeBusca Array de Objetos contendo contratos
+ * @param {Number} indexContrato Índice do contrato a ser pesquisado dentro do Array de Objetos
+ * @returns {Object} Novo objeto formado com item pesquisado
+ */
+function getDocumentoList (objDeBusca, indexContrato) {
+    //const length = Object.keys(importedJSON[index].length); // Verifica quantidade do array em um objeto
+    var objFormado = [];
+    for ( var i = 0; i < objDeBusca[indexContrato].length; i++ ){
+        //if ( getKeyByValue(objFormado, "nome", objDeBusca[indexContrato][i]["nome"]) === -1) {  // Verifica se o valor existe antes de criar o objeto e coloca-lo a lista
+            objFormado.push( // Adiciona a lista um novo objeto com o valor encontrado
+                Object.create( documentoListSchema, { nome: { value: objDeBusca[indexContrato][i]["nome"] } ,
+                                 diretorio: { value: objDeBusca[indexContrato][i]["diretorio"] },
+                                 tipo: { value: "" } ,
+                                 numAditivo: { value: objDeBusca[indexContrato][i]["numAditivo"] } ,
+                                 dataInsert: { value: objDeBusca[indexContrato][i]["dataInsert"] }
+                } )
+            );
+        //}
     }
-    return documentoList;
+    return objFormado;
 }
+
+/**
+ * Verifica se existe um valor dentro de um objeto simples.
+ * Não percorre submiveis de array de dentro do objeto, somente
+ * primeiro nivel.
+ * 
+ * @param {Object} objeto objeto a ser pesquisado
+ * @param {String} key nome da chave ao qual o valor se encontra
+ * @param {*} valor valor a ser pesquisado
+ * @returns Index do objeto com o valor pesquisado dentro do objeto
+ */
+function getKeyByValue(objeto, key, valor) { 
+    for (var prop in objeto) { 
+        if (objeto.hasOwnProperty(prop)) { 
+            if (objeto[prop][key].value === valor) 
+            return prop; 
+        } 
+    }
+    return -1 
+} 
 
 matchJSONValues();
 
