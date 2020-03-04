@@ -105,34 +105,14 @@ const deptoPartListSchema = schemaJSONMaker({
     }
 })
 
-//importedJSON[5][0]["nome"]
 const importedJSON = syncReadFileToJSON();
 
 function matchJSONValues(){
 //    Cria objeto com os valores indicados
     const indexContrato = 1
+    var contrato = Object.create(contratoSchema);
+    
     if (importedJSON[indexContrato] != null){
-        var contrato = Object.create(contratoSchema)//, { 
-        //     id: { value: indexContrato },
-        //     //id: { value: importedJSON[indexContrato] },
-        //     objeto: { value: importedJSON[indexContrato][0]["objeto"] },
-        //     estabFiscal: { value: importedJSON[indexContrato][0]["estabFiscal"] },
-        //     parceiro: { value: importedJSON[indexContrato][0]["parceiro"] },
-        //     cnpj: { value: importedJSON[indexContrato][0]["cnpj"] },
-        //     status: { value: importedJSON[indexContrato][0]["status"] },
-        //     situacao: { value: importedJSON[indexContrato][0]["situacao"] },
-        //     valTotal: { value: importedJSON[indexContrato][0]["valTotal"] },
-        //     dataInicio: { value: importedJSON[indexContrato][0]["dataInicio"] },
-        //     dataFim: { value: importedJSON[indexContrato][0]["dataFim"] },
-        //     deptoPartList: { value: getDepartamentoList(importedJSON, indexContrato) },
-        //     indReajuste: { value: importedJSON[indexContrato][0]["indReajuste"] },
-        //     diaAntecedencia: { value: importedJSON[indexContrato][0]["diaAntecedencia"] },
-        //     obs: { value: importedJSON[indexContrato][0]["obs"] },
-        //     historico: { value: importedJSON[indexContrato][0]["historico"] },
-        //     anaJuridico: { value: importedJSON[indexContrato][0]["anaJuridico"] },
-        //     obs: { value: importedJSON[indexContrato][0]["obs"] },
-        //     documentoList: { value: getDocumentoList(importedJSON, indexContrato)  }
-        // });
         contrato.id = indexContrato;
         contrato.objeto = importedJSON[indexContrato][0]["objeto"];
         contrato.estabFiscal = importedJSON[indexContrato][0]["estabFiscal"];
@@ -152,28 +132,8 @@ function matchJSONValues(){
         contrato.obs = importedJSON[indexContrato][0]["obs"];
         contrato.documentoList = getDocumentoList(importedJSON, indexContrato);
 
-        console.log(Object.getPrototypeOf(contrato));
-        const print = JSON.stringify(contrato);
-//        console.log(contrato.documentoList);
         console.log(contrato);
     } else console.log("Index: [" + indexContrato + "] não encontrado");
-
-//     let contacts = {
-//         name: "Timothy",
-//         age: 35
-//     }
-
-//     let testeObj = Object.create(contratoSchema);
-//     testeObj.obs = "Ambiel";
-//     testeObj.estabFiscal = "Unidade1"
-//     // testeObj.age = 20;
-    
-//  //   console.log(contacts);
-//     console.log(testeObj);
-//     console.log(Object.getPrototypeOf(testeObj));
-//  //   Object.setPrototypeOf(testeObj, Number)
-//     console.log(JSON.stringify(Object.values(testeObj)));
-
 }
 
 /**
@@ -185,12 +145,12 @@ function matchJSONValues(){
  */
 function getDepartamentoList (objDeBusca, indexContrato){
     var objFormado = [];
+    var deptoPartList = Object.create( deptoPartListSchema );
 
     for ( var i = 0; i < objDeBusca[indexContrato].length; i++ ){
         // if ( departamentoList.indexOf(importedJSON[index][j]["deptoPartList"]) === -1) {
         if ( getKeyByValue(objFormado, "departamento", objDeBusca[indexContrato][i]["deptoPartList"]) === -1) { // Verifica se o valor existe antes de criar o objeto e coloca-lo a lista
-            objFormado.push( // Adiciona a lista um novo objeto com o valor encontrado
-                Object.create(deptoPartListSchema, { departamento: { value: objDeBusca[indexContrato][i]["deptoPartList"] } } )
+            objFormado.push( deptoPartList.departamento = objDeBusca[indexContrato][i]["deptoPartList"] // Adiciona a lista um novo objeto com o valor encontrado    
             );
         }  
     }
@@ -235,7 +195,7 @@ function getDocumentoList (objDeBusca, indexContrato) {
 function getKeyByValue(objeto, key, valor) { 
     for (var prop in objeto) { 
         if (objeto.hasOwnProperty(prop)) { 
-            if (objeto[prop][key].value === valor) 
+            if (objeto[prop][key] === valor) 
             return prop; 
         } 
     }
