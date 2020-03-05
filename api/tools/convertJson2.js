@@ -13,7 +13,7 @@ const schemaJSONMaker = require('json-schema-defaults'); // Biblioteca para form
 
 const fs = require('fs');
 
-const dirFile = 'tools/JSON/SQL Contratos para JSON (Keyed).json';
+const dirFile = 'tools/JSON/SQL Contratos para JSON (Keyed)_05_03_20.json';
 
 // Synchronous - ReadFile
 function syncReadFileToJSON() {
@@ -41,13 +41,14 @@ function asyncWriteJsonToFile(jsonObj, dirFile) {
 const contratoSchema = schemaJSONMaker({
     "type" : "object",
     "properties" : {
-        "id": { "type": "number" },
+        "idSecondary": { "type": "number" },
         "objeto": { "type": "string" },
         "estabFiscal": { "type": "string" },
         "parceiro": { "type": "string" },
         "cnpj": { "type": "number" },
         "status": { "type": "string" },
         "situacao": { "type": "string" },
+        "deptoResponsavel": { "type": "string"},
         "valTotal": { "type": "number" },
         "valMensal": { "type": "number" },
         "dataInicio": { "type": "date" },
@@ -102,13 +103,14 @@ function matchJSONValues(){
     while(indexContrato.toString() !== lastKey) {
         const contrato = Object.create(contratoSchema); // Cria objeto com com Prototype de outro objeto
         if (importedJSON[indexContrato] != null){
-            contrato.id = indexContrato;
+            contrato.idSecondary = indexContrato;
             contrato.objeto = importedJSON[indexContrato][0]["objeto"];
             contrato.estabFiscal = importedJSON[indexContrato][0]["estabFiscal"];
             contrato.parceiro = importedJSON[indexContrato][0]["parceiro"];
-            contrato.cnpj = importedJSON[indexContrato][0]["cnpj"];
+            contrato.cnpj = parseInt(importedJSON[indexContrato][0]["cnpj"].replace(/[/.-]+/g,''), 10); //Remove "/" "." "-" da String e conver tapa inteiro
             contrato.status = importedJSON[indexContrato][0]["status"];
             contrato.situacao = importedJSON[indexContrato][0]["situacao"];
+            contrato.deptoResponsavel = importedJSON[indexContrato][0]["deptoResponsavel"];
             contrato.valTotal = importedJSON[indexContrato][0]["valTotal"];
             contrato.dataInicio = importedJSON[indexContrato][0]["dataInicio"];
             contrato.dataFim = importedJSON[indexContrato][0]["dataFim"];
@@ -139,8 +141,8 @@ function getDepartamentoList (objDeBusca, indexContrato){
 
     for ( var i = 0; i < objDeBusca[indexContrato].length; i++ ){
         var deptoPartList = Object.create( deptoPartListSchema );
-        if ( getKeyByValue(objFormado, "departamento", objDeBusca[indexContrato][i]["deptoPartList"]) === -1) { // Verifica se o valor existe antes de criar o objeto e coloca-lo a lista
-            deptoPartList.departamento = objDeBusca[indexContrato][i]["deptoPartList"]
+        if ( getKeyByValue(objFormado, "departamento", objDeBusca[indexContrato][i]["deptoPart"]) === -1) { // Verifica se o valor existe antes de criar o objeto e coloca-lo a lista
+            deptoPartList.departamento = objDeBusca[indexContrato][i]["deptoPart"]
             objFormado.push( deptoPartList );// Adiciona a lista um novo objeto com o valor encontrado
         }  
     }
