@@ -105,3 +105,4 @@ dist
 .tern-port
 
 api/tools/JSON/*.json
+api/public/file/*.*
