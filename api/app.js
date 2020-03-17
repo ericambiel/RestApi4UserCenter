@@ -22,6 +22,7 @@ mongoose.connect(`mongodb://${config.dbHost}/${config.dbName}`, {
     useUnifiedTopology: true,
     useFindAndModify: false}) // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
   .then(client => {
+    console.log("IP/Hostname: " + config.dbHost);
     console.log("Conectado a Base de Dados: " + config.dbName);
   })
   .catch(error => {

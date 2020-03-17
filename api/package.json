@@ -27,7 +27,8 @@
   },
   "homepage": "https://github.com/ericambiel/RestApi4UserCenter#readme",
   "dependencies": {
-    "cookie-parser": "^1.4.4",
+    "connect-multiparty": "^2.2.0",
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "debug": "^2.6.9",
     "deepmerge": "^4.2.2",
@@ -35,7 +36,7 @@
     "http-errors": "^1.6.3",
     "jade": "^1.11.0",
     "json-schema-defaults": "^0.4.0",
-    "mongoose": "^5.9.2",
+    "mongoose": "^5.9.5",
     "morgan": "^1.9.1",
     "validator": "^12.2.0"
   },
