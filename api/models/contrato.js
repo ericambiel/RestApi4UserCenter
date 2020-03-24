@@ -6,7 +6,7 @@ const Documento = require('./documento');
 
 const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     objeto: { type: String, require: true },
-    estabFiscal: { type: String, require: true },
+    estabFiscal: { type: String},
     parceiro: { type: String, require: true },
     cnpj: { type: Number, require: true },
     status: { type: String },
@@ -16,14 +16,14 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     valMensal: { type: Number },
     dataInicio: { type: Date },
     dataFim: { type: Date },
-    deptoPartList: { type : Departamento }, // Lista de Departamentos associados
+    deptoPartList: { type : Departamento, default: [] }, // Lista de Departamentos associados
     indReajuste: { type: String },
     diaAntecedencia: { type: Number },  // Dias de antecedencia
     obs: { type: String },
     historico: { type: String },
     anaJuridico: { type: Boolean },     // Analise juridica
-    documentoList: { type : Documento },
-    natureza: { type: String } 
+    documentoList: { type : Documento, default: [] },
+    natureza: { type: String,  } 
 }, {collection: 'Contratos'});
 
 // Objeto sem segmentação por classes

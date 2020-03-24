@@ -17,7 +17,9 @@ var fileRouter = require('./routes/file');
 var app = express();
 
 mongoose.Promise = global.Promise;
-mongoose.connect(`mongodb://${config.dbHost}/${config.dbName}`, { 
+
+connectionString = `mongodb://${config.dbUser}:${config.dbPassword}@${config.dbHost}:${config.dbPort}/${config.dbName}`
+mongoose.connect( connectionString, { 
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false}) // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
@@ -28,6 +30,15 @@ mongoose.connect(`mongodb://${config.dbHost}/${config.dbName}`, {
   .catch(error => {
     console.log("Erro ao se conectar ao BD: " + error);
   });
+
+mongoose.connection.on('connected', function (err) {
+  console.log("Connected to DB using chain: " + connectionString);
+});
+
+// Error handler
+mongoose.connection.on('error', function (err) {
+  console.log(err);
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
