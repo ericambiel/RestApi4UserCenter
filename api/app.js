@@ -6,26 +6,40 @@ var logger = require('morgan');
 
 const config = require('./config');
 const mongoose = require('mongoose');
-const cors = require('cors');
+//const cors = require('cors'); //Habilitar caso esteja em DEV
 
-// Variáveis das Rotas
+// Variáveis das Rotas, add logo abaixo em use.nomeRouter
 var indexRouter = require('./routes/index');
 var usuariosRouter = require('./routes/usuarios');
 var contratosRouter = require('./routes/contratos');
+var fileRouter = require('./routes/file');
 
 var app = express();
 
 mongoose.Promise = global.Promise;
-mongoose.connect(`mongodb://${config.dbHost}/${config.dbName}`, { 
+
+connectionString = `mongodb://${config.dbUser}:${config.dbPassword}@${config.dbHost}:${config.dbPort}/${config.dbName}`
+mongoose.connect( connectionString, { 
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false}) // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
   .then(client => {
-    console.log("Conectado a Base de Dados: " + config.dbName);
+    console.log(`Conectado ao BD em: ${config.dbHost}:${config.dbPort}`);
+    console.log(`Base de Dados: ${config.dbName}`);
+    console.log(`Contato: eric.ambiel@gmail.com.br - (19) 9 9747-4657`)
   })
   .catch(error => {
     console.log("Erro ao se conectar ao BD: " + error);
   });
+
+// mongoose.connection.on('connected', function (err) {
+//   console.log("Connected to DB using chain: " + connectionString);
+// });
+
+// Error handler
+mongoose.connection.on('error', function (err) {
+  console.log(err);
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -36,7 +50,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+//app.use(cors()); //Habilitar caso esteja em DEV
 
 app.use((req, res, next) => {
   const collection = req.app.locals[config.dbCollection];
@@ -46,8 +60,9 @@ app.use((req, res, next) => {
 
 // Configuração das Rotas
 app.use('/', indexRouter);
-app.use('/usuarios', usuariosRouter);
-app.use('/contratos', contratosRouter);
+app.use('/api/usuarios', usuariosRouter);
+app.use('/api/contratos', contratosRouter);
+app.use('/api/file', fileRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

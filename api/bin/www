@@ -13,7 +13,7 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || `${config.dbPort}`);
+var port = normalizePort(process.env.PORT || `${config.apiRestPort}`);
 app.set('porta', port);
 
 /**
@@ -26,9 +26,10 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(config.dbPort);
+server.listen(config.apiRestPort);
 server.on('erro', onError);
 server.on('escutando', onListening);
+console.log(`API Rest4UserCenter rodando em porta: ${config.apiRestPort}`);
 
 /**
  * Normalize a port into a number, string, or false.
