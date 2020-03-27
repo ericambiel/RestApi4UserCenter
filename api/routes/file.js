@@ -4,9 +4,14 @@ const multipart = require('connect-multiparty');
 const config = require('../config');
 var fs = require('fs');
 
-const multipartMiddleware = multipart({ uploadDir: `./${config.diretorioContratos}` })
-var dirFile = path.dirname(__dirname); //Volta um diretorio.
+//var dirFile = path.dirname(__dirname); //Volta um diretório. // Descometar para gravar em public quando dev
+//const multipartMiddleware = multipart({ uploadDir: `./${config.diretorioContratos}` }) // Descometar para gravar em public quando dev
+
+var dirFile = (process.cwd()); //Volta um diretório. // Quando for compilar descomentar
+
 dirFile = path.join(dirFile, config.diretorioContratos); //pasta onde os arquivos estão após API
+
+const multipartMiddleware = multipart({ uploadDir: `${dirFile}` }) // Quando for compilar descomentar
 
 /**
  * Renomeia arquivo.
@@ -15,7 +20,7 @@ dirFile = path.join(dirFile, config.diretorioContratos); //pasta onde os arquivo
  * @param {string} newFileName Novo nome do arquivo.
  */
 function renameFile(dirFile, fileName ,newFileName) {
-  // TODO: Arquivos de mesmo noele ele substitui, enviar menssagem que arquivo já existe!!!
+  // TODO: Arquivos de mesmo nome estão sendo sobrescritos, enviar mensagem que arquivo já existe!!!
   fs.rename(`${dirFile}/${fileName}`, `${dirFile}/${newFileName}`, err => {
     if ( err ) {
       console.log('ERROR: ' + err);
@@ -27,14 +32,14 @@ function renameFile(dirFile, fileName ,newFileName) {
 router.get('/contrato/:file', (req, res, next) =>{
   const { file } = req.params;
 
-  // res.sendFile( file, { root: dirFile }); //Tratar menssagem de erro caso arquivo não seja encontrado
+  // res.sendFile( file, { root: dirFile }); //Tratar mensagem de erro caso arquivo não seja encontrado
   res.download( dirFile + "/" + file); // Mais completo que sendFiles
 });
 
 /** Insere arquivo */
 router.post('/contrato', multipartMiddleware, (req, res) => {
   const files = req.files;
-  //console.log(`Armazendo arquivo: ${file}`);
+  //console.log(`Armazenando arquivo: ${file}`);
 
   if (files.file.length > 0){
     files.file.forEach(file => {

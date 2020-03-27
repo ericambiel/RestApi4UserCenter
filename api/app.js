@@ -6,7 +6,7 @@ var logger = require('morgan');
 
 const config = require('./config');
 const mongoose = require('mongoose');
-const cors = require('cors');
+//const cors = require('cors'); //Habilitar caso esteja em DEV
 
 // Variáveis das Rotas, add logo abaixo em use.nomeRouter
 var indexRouter = require('./routes/index');
@@ -24,16 +24,17 @@ mongoose.connect( connectionString, {
     useUnifiedTopology: true,
     useFindAndModify: false}) // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
   .then(client => {
-    console.log("IP/Hostname: " + config.dbHost);
-    console.log("Conectado a Base de Dados: " + config.dbName);
+    console.log(`Conectado ao BD em: ${config.dbHost}:${config.dbPort}`);
+    console.log(`Base de Dados: ${config.dbName}`);
+    console.log(`Contato: eric.ambiel@gmail.com.br - (19) 9 9747-4657`)
   })
   .catch(error => {
     console.log("Erro ao se conectar ao BD: " + error);
   });
 
-mongoose.connection.on('connected', function (err) {
-  console.log("Connected to DB using chain: " + connectionString);
-});
+// mongoose.connection.on('connected', function (err) {
+//   console.log("Connected to DB using chain: " + connectionString);
+// });
 
 // Error handler
 mongoose.connection.on('error', function (err) {
@@ -49,7 +50,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+//app.use(cors()); //Habilitar caso esteja em DEV
 
 app.use((req, res, next) => {
   const collection = req.app.locals[config.dbCollection];
@@ -59,9 +60,9 @@ app.use((req, res, next) => {
 
 // Configuração das Rotas
 app.use('/', indexRouter);
-app.use('/usuarios', usuariosRouter);
-app.use('/contratos', contratosRouter);
-app.use('/file', fileRouter);
+app.use('/api/usuarios', usuariosRouter);
+app.use('/api/contratos', contratosRouter);
+app.use('/api/file', fileRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

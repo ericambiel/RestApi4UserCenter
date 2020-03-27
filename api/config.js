@@ -6,5 +6,5 @@ module.exports = {
   dbUser: 'dev',
   dbPassword: 'dev',
   dbCollection: 'contratos',
-  diretorioContratos: 'public/files/contratos' //Diretorio dos Arquivos de contrato após pasta "api" 
+  diretorioContratos: 'public/files/contratos' //Diretório dos Arquivos de contrato após pasta "api" 
 };

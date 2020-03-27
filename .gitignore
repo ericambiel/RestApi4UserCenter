@@ -106,3 +106,4 @@ dist
 
 api/tools/JSON/*.json
 api/public/files
+api/restapi4usercenter.*

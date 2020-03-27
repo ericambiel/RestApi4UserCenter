@@ -42,5 +42,14 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
+  },
+  "bin": "./bin/www",
+  "pkg": {
+    "assets": [
+      "public/stylesheets/**/*"
+    ],
+    "targets": [
+      "node12"
+    ]
   }
 }
