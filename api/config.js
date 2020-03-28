@@ -8,3 +8,4 @@ module.exports = {
   dbCollection: 'contratos',
   diretorioContratos: 'public/files/contratos' //Diretório dos Arquivos de contrato após pasta "api" 
 };
+// TODO: Apagar, foi substituído por ".env.example"

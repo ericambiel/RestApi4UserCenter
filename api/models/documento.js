@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
-const config = require('../config');
+require('dotenv-safe').config();
 
 const documentoSchema = new mongoose.Schema({
   nome: { type: String, require: true },
   descricao: { type: String },
-  diretorio: { type: String , default: config.diretorioContratos },
+  diretorio: { type: String , default: process.env.UPLOAD_DIR_CONTARTOS }, // TODO: Default não funciona, verificar export.module abaixo
   tipo: { type: String },
   numAditivo: { type: Number }, // Sequência logica do documento
   dataInsert: { type: Date },

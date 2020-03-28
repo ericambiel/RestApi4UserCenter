@@ -13,7 +13,7 @@ router.get('/', (req, res, next) => {
   
   /**
    * Insere documento em Contratos
-   * Já faz a ligação entre Body da request e obejeto modelo Contrato 
+   * Já faz a ligação entre Body da request e objeto modelo Contrato 
    */
   router.post('/', (req, res, next) => {
     const contrato = new Contrato(req.body)
@@ -27,13 +27,13 @@ router.get('/', (req, res, next) => {
    * Pode ser enviado somente objeto com valor a ser atualizado
    */
   router.patch('/:id', (req, res, next) => {
-    const { id } = req.params; // Obtem parametro informado na URL
+    const { id } = req.params; // Obtém parâmetro informado na URL
     const items = req.body;
     
     Contrato.findByIdAndUpdate( 
       id, // Id a ser modificado
-      items, // Novos valores para serem atualizados, caso ele não encontrel algum objeto iro somente utilizar os encontrados 
-      {new: true }) // Diz para o Mongo trazer as informações do documento já atualizadas ao invez de um pré visualização
+      items, // Novos valores para serem atualizados, caso ele não encontre algum objeto iro somente utilizar os encontrados 
+      {new: true }) // Diz para o Mongo trazer as informações do documento já atualizadas ao invés de um pré visualização
         .then(result => res.json(result))
         .catch(error => res.send(error));
   });
@@ -46,7 +46,7 @@ router.get('/', (req, res, next) => {
   
     Contrato.findByIdAndDelete( id )
       .then(result => res.json(result)) // Envia Resultados das mudanças
-      .catch(error => res.send(error)); // Caso contrario envia menssagem de erro 
+      .catch(error => res.send(error)); // Caso contrario envia mensagem de erro 
   });
 
 module.exports = router;

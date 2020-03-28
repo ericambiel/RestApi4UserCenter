@@ -23,7 +23,7 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     historico: { type: String },
     anaJuridico: { type: Boolean },     // Analise juridica
     documentoList: { type : Documento, default: [] },
-    natureza: { type: String,  } 
+    natureza: { type: String } 
 }, {collection: 'Contratos'});
 
 // Objeto sem segmentação por classes

@@ -4,7 +4,8 @@
  * Module dependencies.
  */
 
-const config = require('../config');
+require('dotenv-safe').config();
+
 var app = require('../app');
 var debug = require('debug')('api:server');
 var http = require('http');
@@ -13,7 +14,7 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || `${config.apiRestPort}`);
+var port = normalizePort(process.env.API_REST_PORT);
 app.set('porta', port);
 
 /**
@@ -26,10 +27,10 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(config.apiRestPort);
+server.listen(process.env.API_REST_PORT);
 server.on('erro', onError);
 server.on('escutando', onListening);
-console.log(`API Rest4UserCenter rodando em porta: ${config.apiRestPort}`);
+console.log(`API Rest4UserCenter rodando em porta: ${process.env.API_REST_PORT}`);
 
 /**
  * Normalize a port into a number, string, or false.

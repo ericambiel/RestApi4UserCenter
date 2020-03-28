@@ -1,7 +1,7 @@
 var router = require('express').Router();
 const path = require('path');
-const multipart = require('connect-multiparty');
-const config = require('../config');
+const multipart = require('connect-multiparty'); // Middleware automatiza gravação e leitura de arquivos
+require('dotenv-safe').config();
 var fs = require('fs');
 
 //var dirFile = path.dirname(__dirname); //Volta um diretório. // Descometar para gravar em public quando dev
@@ -9,7 +9,7 @@ var fs = require('fs');
 
 var dirFile = (process.cwd()); //Volta um diretório. // Quando for compilar descomentar
 
-dirFile = path.join(dirFile, config.diretorioContratos); //pasta onde os arquivos estão após API
+dirFile = path.join(dirFile, process.env.UPLOAD_DIR_CONTARTOS); //pasta onde os arquivos estão após API
 
 const multipartMiddleware = multipart({ uploadDir: `${dirFile}` }) // Quando for compilar descomentar
 
