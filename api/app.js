@@ -4,15 +4,19 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 //var logger = require('morgan');
 
-require('dotenv-safe').config();
 const mongoose = require('mongoose');
+
+require('dotenv-safe').config();
+
+require('./common/passport'); // Verificar se usuário é valido/BD
 //const cors = require('cors'); //Habilitar caso esteja em DEV
+
 
 // Variáveis das Rotas, add logo abaixo em use.nomeRouter
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var contratosRouter = require('./routes/contratos');
-var fileRouter = require('./routes/file');
+// var usersRouter = require('./routes/users');
+// var contratosRouter = require('./routes/contratos');
+// var fileRouter = require('./routes/file');
 
 var app = express();
 
@@ -61,9 +65,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuração das Rotas
 app.use('/', indexRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/contratos', contratosRouter);
-app.use('/api/file', fileRouter);
+// app.use('/api/users', usersRouter);
+// app.use('/api/contratos', contratosRouter);
+// app.use('/api/file', fileRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

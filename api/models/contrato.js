@@ -59,4 +59,4 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
 //     },
 // }
 
-module.exports = mongoose.model('Contratos', contratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado
+module.exports = mongoose.model('Contrato', contratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado

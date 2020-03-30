@@ -1,6 +1,6 @@
 var router = require('express').Router();
 
-const Contrato = require('../models/contrato')
+const Contrato = require('../../models/contrato')
 
 /** 
  * Listar todos documentos de Contratos 
