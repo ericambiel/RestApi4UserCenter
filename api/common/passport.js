@@ -9,6 +9,7 @@ passport.use(new LocalStrategy({
   passwordField: 'user[password]'
 }, function(userName, password, done) {
   User.findOne({userName: userName}).then(user => {
+    //console.log(!user.validPassword(password)); // DEBUG
     if(!user || !user.validPassword(password)){
       return done(null, false, {errors: {'Usuário ou Senha': 'é invalido'}});
     }

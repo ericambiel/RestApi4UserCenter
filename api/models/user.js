@@ -42,11 +42,17 @@ const UserSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mon
 /** Criptografa a senha ao criar usuário */
 UserSchema.methods.setPassword = function(password) {
     const saltRounds = 12; // >= 12 mais seguro, maior mais lento.
-    this.hashedPass = bcrypt.hashSync(password, saltRounds);
+    this.hashedPass = bcrypt.hashSync(password, saltRounds, (err, result) => {
+        console.log(`(Sistema): Em Hashing a senha - ${!err?'bcrypt':err} - ${Date()}`);
+        return result;
+    });
 };
 
 UserSchema.methods.validPassword = function(password) {
-    return bcrypt.compare(password, this.hashedPass);
+    return bcrypt.compare(password, this.hashedPass, (err, result) => {
+        console.log(`(Login): ${this.userName} - ${!err?'Senha invalida':err} - ${Date()}`);
+        return result;
+    });
 };
 
 /** Gera um Token JWT para usuário */
