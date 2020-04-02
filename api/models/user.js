@@ -49,38 +49,47 @@ UserSchema.methods.setPassword = function(password) {
 };
 
 UserSchema.methods.validPassword = function(password) {
-    return bcrypt.compare(password, this.hashedPass, (err, result) => {
-        console.log(`(Login): ${this.userName} - ${!err?'Senha invalida':err} - ${Date()}`);
-        return result;
-    });
+    // Síncrono
+    const result = bcrypt.compareSync(password, this.hashedPass);
+    console.log(`(Login): ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'} - ${Date()}`);
+    return result;
+    
+    // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar gargalos de CPU.
+    // return bcrypt.compare(password, this.hashedPass, (err, result) => {
+    //     console.log(`(Login): ${this.userName} - ${result?'Logou no sistema':'Tentativa de Login falhou'} - ${Date()}`);
+    //     return result;
+    // });
 };
 
 /** Gera um Token JWT para usuário */
 UserSchema.methods.generateJWT = function() {
+    /* //caso não use opção expiresIn descomentar
     // var today = new Date();
     // var exp = new Date(today);
-
-    // exp.setMinutes(today.getMinutes() + Number(process.env.EXPIRE_USER_TIME));
+    // exp.setMinutes(today.getMinutes() + Number(process.env.EXPIRE_USER_TIME));*/
     
-    // Cria Payloader
+    // Cria Payloader, aqui voCê deve definir qual objetos estram no Payloader.
     return jwt.sign({
         id: this._id,
         userName: this.userName,
-        //exp: parseInt(exp.getTime() / 1000), // caso não use opção expiresIn
+        permissionLevel: this.permissionLevel,
+        //exp: parseInt(exp.getTime() / 1000), // caso não use opção expiresIn descomentar
     }, process.env.SECRET_JWT, 
     {
-        expiresIn: Number(process.env.EXPIRE_USER_TIME) //
+        expiresIn: Number(process.env.EXPIRE_USER_TIME) 
     });
 };
 
-/** Devolve Autenticação um TOKEN JWT */
+/** Devolve Autenticação TOKEN JWT */
 UserSchema.methods.toAuthJSON = function() {
     var exp = new Date();
-
     exp.setUTCSeconds(exp.getSeconds() + Number(process.env.EXPIRE_USER_TIME));
     
+    // Retorna esses valores para o endPoint
     return {
         userName: this.userName,
+        permissionLevel: this.permissionLevel,
+
 //        email: this.email,
 //        image: this.image,
         token: this.generateJWT(),
