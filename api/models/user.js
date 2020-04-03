@@ -68,10 +68,13 @@ UserSchema.methods.generateJWT = function() {
     // var exp = new Date(today);
     // exp.setMinutes(today.getMinutes() + Number(process.env.EXPIRE_USER_TIME));*/
     
-    // Cria Payloader, aqui voCê deve definir qual objetos estram no Payloader.
+    // Cria Payloader, aqui você deve definir qual objetos estram no Payloader do JWT.
     return jwt.sign({
-        id: this._id,
+        //userId: this._id,
         userName: this.userName,
+        name: this.name,
+        surname: this.surname,
+        image: this.image,
         permissionLevel: this.permissionLevel,
         //exp: parseInt(exp.getTime() / 1000), // caso não use opção expiresIn descomentar
     }, process.env.SECRET_JWT, 
@@ -80,20 +83,15 @@ UserSchema.methods.generateJWT = function() {
     });
 };
 
-/** Devolve Autenticação TOKEN JWT */
-UserSchema.methods.toAuthJSON = function() {
-    var exp = new Date();
-    exp.setUTCSeconds(exp.getSeconds() + Number(process.env.EXPIRE_USER_TIME));
-    
+/** Devolve Autenticação TOKEN JWT + objetos fora do token se precisar */
+UserSchema.methods.toAuthJSON = function() {    
     // Retorna esses valores para o endPoint
     return {
-        userName: this.userName,
-        permissionLevel: this.permissionLevel,
-
+//        userName: this.userName,
+//        permissionLevel: this.permissionLevel,
 //        email: this.email,
 //        image: this.image,
         token: this.generateJWT(),
-        tokenExpire: exp
     };
 };
 

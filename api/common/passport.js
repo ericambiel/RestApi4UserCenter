@@ -5,8 +5,8 @@ const LocalStrategy = require('passport-local').Strategy;
 const User = require('../models/user')
 
 passport.use(new LocalStrategy({
-  usernameField: 'user[userName]',
-  passwordField: 'user[password]'
+  usernameField: 'userName', // Caso queira pegar de dentro de um objeto "user[username]"
+  passwordField: 'password'
 }, function(userName, password, done) {
   User.findOne({userName: userName}).then(user => {
     if(!user || !user.validPassword(password)){

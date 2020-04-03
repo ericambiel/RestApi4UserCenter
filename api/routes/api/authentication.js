@@ -7,11 +7,11 @@ const User = require('../../models/user');
 
 /** Faz login do usuário no sistema */
 router.post('/login', (req, res, next) => {  
-  if(!req.body.user.userName){
+  if(!req.body.userName){
     return res.status(422).json({errors: {userName: "não pode estar em branco"}});
   }
 
-  if(!req.body.user.password){
+  if(!req.body.password){
     return res.status(422).json({errors: {password: "não pode estar em branco"}});
   }
   
