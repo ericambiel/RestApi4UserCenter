@@ -1,3 +1,7 @@
+/**
+ * Classe responsável por descrever estratégias do Passport
+ */
+
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 //const mongoose = require('mongoose');

@@ -4,6 +4,7 @@ const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é d
 const bcrypt = require('bcrypt'); // Criptografa senha a partir de um token.
 var jwt = require('jsonwebtoken'); // Gerador Token JWT.
 require("dotenv-safe").config(); // Configurações de ambiente.
+permissionModule = require('../common/PermissionModule')
 
 const UserSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mongoDB
     userName: { 
@@ -29,9 +30,14 @@ const UserSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mon
     hashedPass: { 
         type: String, 
         require: true },
-    permissionLevel:  { 
+    refreshToken: {
+        type: String
+        // TODO: Implantar AKA Session Token
+    },
+    permissions:  { 
         type: [String], 
-        default: 'basic'} ,
+        default: permissionModule.BASIC.read,
+        require: true },
     image: {
         type: String
     },
@@ -68,14 +74,14 @@ UserSchema.methods.generateJWT = function() {
     // var exp = new Date(today);
     // exp.setMinutes(today.getMinutes() + Number(process.env.EXPIRE_USER_TIME));*/
     
-    // Cria Payloader, aqui você deve definir qual objetos estram no Payloader do JWT.
+    // Cria Payloader, aqui você deve definir qual objetos estram no Payload do JWT.
     return jwt.sign({
-        //userId: this._id,
+        _id: this._id, // Usado pelo Rest por algum get do Front 
         userName: this.userName,
         name: this.name,
         surname: this.surname,
         image: this.image,
-        permissionLevel: this.permissionLevel,
+        permissions: this.permissions,
         //exp: parseInt(exp.getTime() / 1000), // caso não use opção expiresIn descomentar
     }, process.env.SECRET_JWT, 
     {
@@ -88,7 +94,7 @@ UserSchema.methods.toAuthJSON = function() {
     // Retorna esses valores para o endPoint
     return {
 //        userName: this.userName,
-//        permissionLevel: this.permissionLevel,
+//        permissions: this.permissions,
 //        email: this.email,
 //        image: this.image,
         token: this.generateJWT(),

@@ -1,11 +1,15 @@
 var router = require('express').Router();
 
+var auth = require('../../common/auth');
+const routePermission = require('../../common/PermissionRoutes');
+const permission = require('../../common/PermissionModule');
+
 const Contrato = require('../../models/contrato')
 
 /** 
  * Listar todos documentos de Contratos 
  */ 
-router.get('/', (req, res, next) => {
+router.get('/', auth.required, routePermission.check(permission.CONTRATO.read), (req, res, next) => {
     Contrato.find()
     .then(result => res.json(result))
     .catch(error => res.send(error))

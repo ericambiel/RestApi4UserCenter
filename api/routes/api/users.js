@@ -11,11 +11,11 @@ router.put('/', auth.required, function(req, res, next){
     if(!user){ return res.sendStatus(401); }
 
     // only update fields that were actually passed...
-    if(typeof req.body.user.email !== 'undefined'){
-      user.email = req.body.user.name;
+    if(typeof req.body.user.name !== 'undefined'){
+      user.name = req.body.user.name;
     }
     if(typeof req.body.user.surname !== 'undefined'){
-      user.email = req.body.user.email;
+      user.surname = req.body.user.surname;
     }
     if(typeof req.body.user.email !== 'undefined'){
       user.email = req.body.user.email;
@@ -23,8 +23,8 @@ router.put('/', auth.required, function(req, res, next){
     if(typeof req.body.user.password !== 'undefined'){
       user.setPassword(req.body.user.password);
     }
-    if(typeof req.body.user.permissionLevel !== 'undefined'){
-      user.email = req.body.user.email;
+    if(typeof req.body.user.permissions !== 'undefined'){
+      user.permissions = req.body.user.permissions;
     }
     if(typeof req.body.user.image !== 'undefined'){
       user.image = req.body.user.image;
@@ -41,7 +41,7 @@ router.put('/', auth.required, function(req, res, next){
  */
 router.post('/', (req, res, next) => {
   const { userName, name, surname, email, password, 
-    permissionLevel, adUser } = req.body;
+    permissions, adUser } = req.body;
   
   const user = new User();
 
@@ -50,8 +50,8 @@ router.post('/', (req, res, next) => {
   user.surname = surname; 
   user.email = email; 
   user.setPassword(password);
-  user.permissionLevel = permissionLevel;
-  user.adUser = adUser;
+  //user.permissions = permissions;
+  //user.adUser = adUser;
 
   user.save()
     .then( () => res.json({user: user.toAuthJSON()}))

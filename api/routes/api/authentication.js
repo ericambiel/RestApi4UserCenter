@@ -1,6 +1,9 @@
 var router = require('express').Router();
 const passport = require('passport');
+
 var auth = require('../../common/auth');
+const routePermission = require('../../common/PermissionRoutes');
+const permission = require('../../common/PermissionModule');
 
 const User = require('../../models/user');
 
@@ -28,12 +31,12 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
-/**  Verifica se o JWT do usuário é valido */
-router.get('/', auth.required, (req, res, next) => {
+/**  Verifica se ID no payload do JWT é valido */
+router.get('/', auth.required, routePermission.check(permission.BASIC.read), (req, res, next) => {
   // Pode verificar conteúdo do payload aqui (req.payload)
-  User.findById(req.payload.id).then(user => {
+  User.findById(req.payload._id).then(user => {
     if(!user){ return res.sendStatus(401); }
-
+    // carregar id no payload
     return res.json({user: user.toAuthJSON()});
   }).catch(next);
 });
