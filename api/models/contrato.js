@@ -5,10 +5,10 @@ const Departamento = require('./departamento');
 const Documento = require('./documento');
 
 const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
-    objeto: { type: String, require: true },
+    objeto: { type: String, required: [true, 'Não pode estar em branco'] },
     estabFiscal: { type: String},
-    parceiro: { type: String, require: true },
-    cnpj: { type: Number, require: true },
+    parceiro: { type: String, required: [true, 'Não pode estar em branco'] },
+    cnpj: { type: Number, required: [true, 'Não pode estar em branco'] },
     status: { type: String },
     situacao: { type: String },
     deptoResponsavel: { type: String },
@@ -23,7 +23,7 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     historico: { type: String },
     anaJuridico: { type: Boolean },     // Analise juridica
     documentoList: { type : Documento, default: [] },
-    natureza: { type: String,  } 
+    natureza: { type: String } 
 }, {collection: 'Contratos'});
 
 // Objeto sem segmentação por classes
@@ -59,4 +59,4 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
 //     },
 // }
 
-module.exports = mongoose.model('Contratos', contratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado
+module.exports = mongoose.model('Contrato', contratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado

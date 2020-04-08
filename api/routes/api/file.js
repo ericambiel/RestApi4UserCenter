@@ -1,15 +1,19 @@
 var router = require('express').Router();
 const path = require('path');
-const multipart = require('connect-multiparty');
-const config = require('../config');
+const multipart = require('connect-multiparty'); // Middleware automatiza gravação e leitura de arquivos
+require('dotenv-safe').config();
 var fs = require('fs');
+
+var auth = require('../../common/auth'); // Verifica validade do TOKEN
+const routePermission = require('../../common/PermissionRoutes'); // Suporte a permissões a rota 
+const permissions = require('../../common/PermissionModule'); // Tipos de permissões
 
 //var dirFile = path.dirname(__dirname); //Volta um diretório. // Descometar para gravar em public quando dev
 //const multipartMiddleware = multipart({ uploadDir: `./${config.diretorioContratos}` }) // Descometar para gravar em public quando dev
 
 var dirFile = (process.cwd()); //Volta um diretório. // Quando for compilar descomentar
 
-dirFile = path.join(dirFile, config.diretorioContratos); //pasta onde os arquivos estão após API
+dirFile = path.join(dirFile, process.env.UPLOAD_DIR_CONTARTOS); //pasta onde os arquivos estão após API
 
 const multipartMiddleware = multipart({ uploadDir: `${dirFile}` }) // Quando for compilar descomentar
 
@@ -29,15 +33,16 @@ function renameFile(dirFile, fileName ,newFileName) {
   });
 }
 
-router.get('/contrato/:file', (req, res, next) =>{
+/** Baixa arquivo */
+router.get('/contrato/:file', auth.required, routePermission.check(permissions.CONTRATO.select), (req, res) =>{
   const { file } = req.params;
 
-  // res.sendFile( file, { root: dirFile }); //Tratar mensagem de erro caso arquivo não seja encontrado
+  // res.sendFile( file, { root: dirFile }); //TODO: Tratar mensagem de erro caso arquivo não seja encontrado
   res.download( dirFile + "/" + file); // Mais completo que sendFiles
 });
 
 /** Insere arquivo */
-router.post('/contrato', multipartMiddleware, (req, res) => {
+router.post('/contrato',auth.required, routePermission.check(permissions.CONTRATO.insert), multipartMiddleware, (req, res) => {
   const files = req.files;
   //console.log(`Armazenando arquivo: ${file}`);
 

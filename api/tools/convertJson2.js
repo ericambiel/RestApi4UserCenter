@@ -11,7 +11,6 @@
 const schemaJSONMaker = require('json-schema-defaults'); // Biblioteca para formar schemas JSON
 
 const fs = require('fs');
-const config = require('../config');
 
 const dirFile = './JSON/SQL Contratos para JSON (Keyed)_23_03_20.json';
 
@@ -179,7 +178,7 @@ function getDocumentoList (objDeBusca, indexContrato) {
             } else {
                 documentoList.nome = objDeBusca[indexContrato][i]["nome"],
                 documentoList.descricao = objDeBusca[indexContrato][i]["nome"].replace(/\..*/,''),
-                documentoList.diretorio =  config.diretorioContratos,
+                documentoList.diretorio =  process.env.UPLOAD_DIR_CONTARTOS,
                 //documentoList.diretorio =  objDeBusca[indexContrato][i]["diretorio"],
                 documentoList.tipo = objDeBusca[indexContrato][i]["nome"].replace(/^.*\./, ''),
                 documentoList.numAditivo = objDeBusca[indexContrato][i]["numAditivo"],
