@@ -4,7 +4,7 @@ const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é d
 const bcrypt = require('bcrypt'); // Criptografa senha a partir de um token.
 var jwt = require('jsonwebtoken'); // Gerador Token JWT.
 require("dotenv-safe").config(); // Configurações de ambiente.
-permissionModule = require('../common/PermissionModule')
+const permissions = require('../common/PermissionModule')
 
 const UserSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mongoDB
     userName: { 
@@ -16,28 +16,27 @@ const UserSchema = new mongoose.Schema({ // Define o Schema a ser usado pelo mon
         lowercase: true },
     name: { 
         type: String, 
-        require: true },
+        required: [true, 'Não pode estar em branco'] },
     surname: { 
         type: String, 
-        require: true },
-    email: { 
+        required: [true, 'Não pode estar em branco'] },
+    email: {
         type: String, 
-        require: true, // Não deixa salvar no BD caso não seja informado.
+        required: [true, 'Não pode estar em branco'], // Não deixa salvar no BD caso não seja informado.
         unique: true, // Não deixa outro documento ter mesmo valor para este campo
         index: true,
         lowercase: true, // salva oque foi digitado em minusculo
         validate: (value) => { return validator.isEmail(value) } }, // Verifica se email é valido antes de salvar
-    hashedPass: { 
+    hashedPass: {
         type: String, 
-        require: true },
+        required: [true, 'Não pode estar em branco'] },
     refreshToken: {
-        type: String
+        type: String,
         // TODO: Implantar AKA Session Token
     },
     permissions:  { 
-        type: [String], 
-        default: permissionModule.BASIC.read,
-        require: true },
+        type: [String],
+        default: permissions.BASIC.select },
     image: {
         type: String
     },

@@ -3,7 +3,7 @@ const passport = require('passport');
 
 var auth = require('../../common/auth');
 const routePermission = require('../../common/PermissionRoutes');
-const permission = require('../../common/PermissionModule');
+const permissions = require('../../common/PermissionModule');
 
 const User = require('../../models/user');
 
@@ -31,8 +31,13 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
-/**  Verifica se ID no payload do JWT é valido */
-router.get('/', auth.required, routePermission.check(permission.BASIC.read), (req, res, next) => {
+/**
+ * Verifica se ID no payload do JWT é valido
+ * e devolve um novo JWT valido.
+ * OBS:SOMENTE PARA DEV, PODE SER COMENTADO.
+ * @param {String} JWT
+*/
+router.get('/', auth.required, routePermission.check(permissions.BASIC.select), (req, res, next) => {
   // Pode verificar conteúdo do payload aqui (req.payload)
   User.findById(req.payload._id).then(user => {
     if(!user){ return res.sendStatus(401); }

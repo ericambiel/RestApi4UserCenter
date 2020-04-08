@@ -1,12 +1,15 @@
 const router = require('express').Router();
-var auth = require('../../common/auth');
 const User = require('../../models/user');
+
+var auth = require('../../common/auth'); // Verifica validade do TOKEN
+const routePermission = require('../../common/PermissionRoutes'); // Suporte a permissões a rota 
+const permissions = require('../../common/PermissionModule'); // Tipos de permissões
 
 // const mongoose = require('mongoose');
 // const User = mongoose.model('User');
 
 /** Atualiza dados do usuário */
-router.put('/', auth.required, function(req, res, next){
+router.put('/', auth.required, routePermission.check(permissions.USER.select), function(req, res, next){
   User.findById(req.payload.id).then(function(user){
     if(!user){ return res.sendStatus(401); }
 
@@ -39,19 +42,17 @@ router.put('/', auth.required, function(req, res, next){
 /**
  * Insere novo usuário ao BD
  */
-router.post('/', (req, res, next) => {
-  const { userName, name, surname, email, password, 
-    permissions, adUser } = req.body;
-  
-  const user = new User();
+router.post('/', routePermission.check(permissions.USER.insert), (req, res, next) => {
+  let user = new User(req.body);
 
-  user.userName = userName;
-  user.name = name; 
-  user.surname = surname; 
-  user.email = email; 
-  user.setPassword(password);
-  //user.permissions = permissions;
-  //user.adUser = adUser;
+  //user = req.body;
+  // user.userName = req.body.userName;
+  // user.name = req.body.name; 
+  // user.surname = req.body.surname; 
+  // user.email = req.body.email; 
+  // user.permissions = req.body.permissions;
+  // user.adUser = req.body.adUser;
+  // user.setPassword(req.body.password);
 
   user.save()
     .then( () => res.json({user: user.toAuthJSON()}))

@@ -2,12 +2,15 @@ const jwt = require('express-jwt');
 require('dotenv-safe').config();
 
 /**
- * Ira pegar do cabeçalho o token enviado pelo cliente.
+ * Ira pegar do cabeçalho da requisição enviado pelo cliente
+ * e verificar se existe um JWT .
  * @param {*} req Dados de requisição que veio de algum endPoint
+ * @return {*} Somente JWT
  */
 function getTokenFromHeader(req){
-  if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'x-access-token') {
-    return req.headers.authorization.split(' ')[1];
+  const token = req.headers['x-access-token'] || req.headers['authorization'] || ''; // Express headers are auto converted to lowercase
+  if (token !== '' || token.startsWith('Bearer ')) { // Tipo do token
+    return token.split(' ')[1];
   }
   return null;
 }
@@ -23,7 +26,7 @@ const auth = {
   // Usado em paginas que NÂO necessitam de autenticação.
   optional: jwt({
     secret: process.env.SECRET_JWT,
-    userProperty: 'payload', //default 'user'
+    userProperty: 'payload', // default 'user' 
     credentialsRequired: false,
     getToken: getTokenFromHeader
   })

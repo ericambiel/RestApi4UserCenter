@@ -5,10 +5,10 @@ const Departamento = require('./departamento');
 const Documento = require('./documento');
 
 const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
-    objeto: { type: String, require: true },
+    objeto: { type: String, required: [true, 'Não pode estar em branco'] },
     estabFiscal: { type: String},
-    parceiro: { type: String, require: true },
-    cnpj: { type: Number, require: true },
+    parceiro: { type: String, required: [true, 'Não pode estar em branco'] },
+    cnpj: { type: Number, required: [true, 'Não pode estar em branco'] },
     status: { type: String },
     situacao: { type: String },
     deptoResponsavel: { type: String },
