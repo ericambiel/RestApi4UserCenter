@@ -9,6 +9,7 @@ router.use('/api/auth', require('./api/authentication'));
 router.use('/api/users', require('./api/users'));
 router.use('/api/contratos', require('./api/contratos'));
 router.use('/api/file', require('./api/file'));
+router.use('/api/permission', require('./api/permissions'));
 
 
 /**

@@ -6,7 +6,7 @@ var fs = require('fs');
 
 var auth = require('../../common/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../common/PermissionRoutes'); // Suporte a permissões a rota 
-const permissions = require('../../common/PermissionModule'); // Tipos de permissões
+const permissionModule = require('../../common/PermissionModule'); // Tipos de permissões
 
 //var dirFile = path.dirname(__dirname); //Volta um diretório. // Descometar para gravar em public quando dev
 //const multipartMiddleware = multipart({ uploadDir: `./${config.diretorioContratos}` }) // Descometar para gravar em public quando dev
@@ -34,7 +34,7 @@ function renameFile(dirFile, fileName ,newFileName) {
 }
 
 /** Baixa arquivo */
-router.get('/contrato/:file', auth.required, routePermission.check(permissions.CONTRATO.select), (req, res) =>{
+router.get('/contrato/:file', auth.required, routePermission.check(permissionModule.CONTRATO.select), (req, res) =>{
   const { file } = req.params;
 
   // res.sendFile( file, { root: dirFile }); //TODO: Tratar mensagem de erro caso arquivo não seja encontrado
@@ -42,7 +42,7 @@ router.get('/contrato/:file', auth.required, routePermission.check(permissions.C
 });
 
 /** Insere arquivo */
-router.post('/contrato',auth.required, routePermission.check(permissions.CONTRATO.insert), multipartMiddleware, (req, res) => {
+router.post('/contrato',auth.required, routePermission.check(permissionModule.CONTRATO.insert), multipartMiddleware, (req, res) => {
   const files = req.files;
   //console.log(`Armazenando arquivo: ${file}`);
 

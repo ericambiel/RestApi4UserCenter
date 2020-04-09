@@ -9,8 +9,9 @@ class PermissionModule {
     BASIC = {select:"basic:select", insert:"basic:insert", delete:"basic:delete", update:"basic:update"};
     CONTRATO = {select:"contrato:select", insert:"contrato:insert", delete:"contrato:delete", update:"contrato:update"};
     USER = {select:"user:select", insert:"user:insert", delete:"user:delete", update:"user:update"};
+    ROOT = {select:"root:select", insert:"root:insert", delete:"root:delete", update:"root:update"}
 }
 
-permissions =  new PermissionModule();
+permissionModule =  new PermissionModule();
 
-module.exports = permissions;
+module.exports = permissionModule;

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose'); // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
 
-const Departamento = require('./departamento');
+// const Departamento = require('./departamento');
 const Documento = require('./documento');
 
 const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
@@ -16,7 +16,7 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     valMensal: { type: Number },
     dataInicio: { type: Date },
     dataFim: { type: Date },
-    deptoPartList: { type : Departamento, default: [] }, // Lista de Departamentos associados
+    deptoPartList: { type : [ {departamento: { type: String } } ], default: [] }, // TODO: Criar referências entre modelo departamento. 
     indReajuste: { type: String },
     diaAntecedencia: { type: Number },  // Dias de antecedencia
     obs: { type: String },
