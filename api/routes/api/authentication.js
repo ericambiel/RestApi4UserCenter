@@ -37,12 +37,12 @@ router.post('/login', (req, res, next) => {
  * OBS:SOMENTE PARA DEV, PODE SER COMENTADO.
  * @param {String} JWT
 */
-// router.get('/', auth.required, routePermission.check(permissionModule.BASIC.select), (req, res, next) => {
+// router.get('/', auth.required, auth.required, routePermission.check(permissionModule.ROOT.select), (req, res, next) => {
 //   // Pode verificar conteúdo do payload aqui (req.payload)
-//   User.findById(req.payload._id).then(user => {
+//   User.findById(req.payload._id).then( async user => {
 //     if(!user){ return res.sendStatus(401); }
 //     // carregar id no payload
-//     return res.json({user: user.toAuthJSON()});
+//     return res.json({user: await user.toAuthJSON()});
 //   }).catch(next);
 // });
 

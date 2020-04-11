@@ -22,8 +22,9 @@ var app = express();
 
 mongoose.Promise = global.Promise;
 
-connectionString = 
-  `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
+const connectionString = 
+  `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+  
 mongoose.connect( connectionString, { 
     useNewUrlParser: true,
     useUnifiedTopology: true,

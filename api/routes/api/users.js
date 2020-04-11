@@ -43,7 +43,7 @@ router.put('/', auth.required, routePermission.check(permissionModule.USER.selec
 /**
  * Insere novo usuário ao BD
  */
-router.post('/',  (req, res, next) => { //auth.required, routePermission.check(permissions.USER.select),
+router.post('/', auth.required, routePermission.check(permissionModule.USER.select), (req, res, next) => {
   let user = new User(req.body.user);
 
   //user = req.body;
@@ -60,7 +60,7 @@ router.post('/',  (req, res, next) => { //auth.required, routePermission.check(p
 });
 
 /* GET users list. */
-router.get('/', (req, res) => { //auth.required, routePermission.check(permissions.USER.select),
+router.get('/', auth.required, routePermission.check(permissionModule.USER.select), (req, res) => {
   User
     .find() // Trás todos
     .populate(['estabFiscal', 'departments', 'permissions']) // Troca todos id referenciados pelo valor dentro da Coleção

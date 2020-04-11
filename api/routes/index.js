@@ -10,7 +10,7 @@ router.use('/api/users', require('./api/users'));
 router.use('/api/contratos', require('./api/contratos'));
 router.use('/api/file', require('./api/file'));
 router.use('/api/permission', require('./api/permissions'));
-
+router.use('/api/departament', require('./api/routedepartament'));
 
 /**
  * Podem ser tratados erros caso ocorram para

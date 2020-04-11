@@ -9,8 +9,7 @@ const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é d
 const bcrypt = require('bcrypt'); // Criptografa senha a partir de um token.
 var jwt = require('jsonwebtoken'); // Gerador Token JWT.
 
-
-const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
+const userSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     userName: { 
         type: String, 
         required: [true, 'Não pode estar em branco'],
@@ -73,7 +72,7 @@ const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
 }, {timestamps: true, collection: 'Users'} )
 
 /** Criptografa a senha ao criar usuário */
-UserSchema.methods.setPassword = function(password) {
+userSchema.methods.setPassword = function(password) {
     if(typeof password !== 'undefined'){
         const saltRounds = 12; // >= 12 mais seguro, maior mais lento.
         this.hashedPass = bcrypt.hashSync(password, saltRounds, (err, result) => { // TODO: Mudar para Assíncrono.
@@ -83,32 +82,34 @@ UserSchema.methods.setPassword = function(password) {
     }
 };
 
-UserSchema.methods.validPassword = function(password) {
+userSchema.methods.validPassword = function(password) {
     // Síncrono
     const result = bcrypt.compareSync(password, this.hashedPass);
     console.log(`(Login): ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'} - ${Date()}`);
     return result;
     
-    // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar gargalos de CPU.
+    // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar bloqueio da thread principal.
     // return bcrypt.compare(password, this.hashedPass, (err, result) => {
     //     console.log(`(Login): ${this.userName} - ${result?'Logou no sistema':'Tentativa de Login falhou'} - ${Date()}`);
     //     return result;
     // });
 };
 
-/** Gera um Token JWT para usuário */
-UserSchema.methods.generateJWT = async function() {
+/** Gera um Token JWT, dados do usuário e permissões de acesso.*/
+userSchema.methods.generateJWT = async function() {
     /* //caso não use opção expiresIn descomentar
     // var today = new Date();
     // var exp = new Date(today);
     // exp.setMinutes(today.getMinutes() + Number(process.env.EXPIRE_USER_TIME));*/
 
+    let _permissions = [];
+
     await Permissions.find( { _id: this.permissions })
         .then( permissions => {
-            //permissions.map( permission => {
-                console.log (permissions);
-                this.permissions = permissions;
-            //})
+            // _permissions = permissions; // Enviar objeto inteiro com _id, comentar linhas map
+            permissions.map( permission => {
+                _permissions.push(permission.permission);
+            })
         });
         
     // Cria Payloader, aqui você deve definir qual objetos estarão no Payload do JWT.
@@ -118,7 +119,8 @@ UserSchema.methods.generateJWT = async function() {
         name: this.name,
         surname: this.surname,
         image: this.image,
-        permissions: this.permissions,
+        departments: this.departments,
+        permissions: _permissions,
         //exp: parseInt(exp.getTime() / 1000), // caso não use opção expiresIn descomentar
     }, process.env.SECRET_JWT, 
     {
@@ -128,7 +130,7 @@ UserSchema.methods.generateJWT = async function() {
     
 
 /** Devolve Autenticação TOKEN JWT + objetos fora do token se precisar */
-UserSchema.methods.toAuthJSON = async function() {    
+userSchema.methods.toAuthJSON = async function() {    
     // Retorna esses valores para o endPoint
     return {
 //        userName: this.userName,
@@ -139,6 +141,6 @@ UserSchema.methods.toAuthJSON = async function() {
     };
 };
 
-UserSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
+userSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
 
-module.exports = mongoose.model('User', UserSchema)
+module.exports = mongoose.model('User', userSchema)
