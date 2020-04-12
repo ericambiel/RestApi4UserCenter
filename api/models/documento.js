@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 require('dotenv-safe').config();
 
-const documentoSchema = new mongoose.Schema({
+const DocumentoSchema = new mongoose.Schema({
   nome: { type: String },
   descricao: { type: String },
   diretorio: { type: String , default: process.env.UPLOAD_DIR_CONTARTOS }, // TODO: Default não funciona, verificar export.module abaixo

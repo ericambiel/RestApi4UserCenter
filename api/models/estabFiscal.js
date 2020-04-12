@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é dado é no banco
 
-const estabFiscalSchema = new Schema({
+const EstabFiscalSchema = new Schema({
   descricao: { 
       type: String, 
       required: [true, 'Necessário uma descrição para Estabelecimento Fiscal'] },
@@ -19,6 +19,6 @@ const estabFiscalSchema = new Schema({
       type: String },
 }, {timestamps: true, collection: 'EstabFiscal'})
 
-estabFiscalSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
+EstabFiscalSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
 
-module.exports = mongoose.model('EstabFiscal', estabFiscalSchema);
+module.exports = mongoose.model('EstabFiscal', EstabFiscalSchema);

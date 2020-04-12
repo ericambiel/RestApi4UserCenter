@@ -1,6 +1,6 @@
 var router = require('express').Router();
 
-router.get('/', function(req, res, next) {
+router.get('/', function(req, res) {
   res.send('Rest4UserCenter funcionando!!!');
 });
 
@@ -10,7 +10,7 @@ router.use('/api/users', require('./api/users'));
 router.use('/api/contratos', require('./api/contratos'));
 router.use('/api/file', require('./api/file'));
 router.use('/api/permission', require('./api/permissions'));
-router.use('/api/departament', require('./api/routedepartament'));
+router.use('/api/department', require('./api/routedepartment'));
 
 /**
  * Podem ser tratados erros caso ocorram para

@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 // const Departamento = require('./departamento');
 const Documento = require('./documento');
 
-const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
+const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     objeto: { type: String, required: [true, 'Não pode estar em branco'] },
     estabFiscal: { type: String},
     parceiro: { type: String, required: [true, 'Não pode estar em branco'] },
@@ -59,4 +59,4 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
 //     },
 // }
 
-module.exports = mongoose.model('Contrato', contratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado
+module.exports = mongoose.model('Contrato', ContratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado

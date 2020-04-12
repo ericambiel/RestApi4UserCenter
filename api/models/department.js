@@ -1,9 +1,9 @@
-const User = require('./user'); // Necessario para referencias
+require('./user'); // Necessário para referencias
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é dado é no banco
 
-const departmentSchema = new Schema({
+const DepartmentSchema = new Schema({
   description: { 
     type: String, 
     required: [ true, 'Necessário uma descrição para departamento' ],
@@ -14,15 +14,23 @@ const departmentSchema = new Schema({
       ref: 'User'} ] } 
 }, {timestamps: true, collection: 'Departments'} )
 
-// departmentSchema.methods.relatesUserTables = async function() {
+DepartmentSchema.methods.relatesUserTables = async function() {
 //   if ( this.departResponsible !== undefined ){
-//     await this.departResponsible.forEach(user => { 
-//         User.findByIdAndUpdate(user, { $push: { departments: this._id } }) // TODO: erro: findByIdAndUpdate is not a function
-//             .catch(err => console.log(err)) 
+//     this.departResponsible.forEach(user => { 
+//         await User.findByIdAndUpdate(user, { $push: { departments: this._id } }) // TODO: erro: findByIdAndUpdate is not a function
+//                   .catch(err => console.log(err)) 
 //     });
 //   }
-// }
+}
 
-departmentSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
+DepartmentSchema.methods.unrelateUserTables = async function() {
+  // TODO: Criar função para desvincular Departamento de usuário, esta sendo feito no endPoint
+  // this.departResponsible.forEach( async user => { 
+  //   await User.findByIdAndUpdate(user, { $pull: { departments: this._id } }) // TODO: erro: findByIdAndUpdate is not a function
+  //             .catch();
+  // })
+}
 
-module.exports = mongoose.model('Department', departmentSchema);
+DepartmentSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
+
+module.exports = mongoose.model('Department', DepartmentSchema);
