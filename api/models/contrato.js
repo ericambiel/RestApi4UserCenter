@@ -2,7 +2,7 @@ const mongoose = require('mongoose'); // Associa o mesmo objeto instanciado "mon
 const Schema = mongoose.Schema;
 
 // const Departamento = require('./departamento');
-const Documento = require('./documento');
+const Documento = require('./Documento');
 
 const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     objeto: { type: String, required: [true, 'Não pode estar em branco'] },

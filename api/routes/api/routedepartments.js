@@ -1,10 +1,42 @@
 const router = require('express').Router();
-const Department = require('../../models/department');
-const User = require ('../../models/user');
+const Department = require('../../models/Department');
+const User = require ('../../models/User');
 
 var auth = require('../../common/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../common/PermissionRoutes'); // Suporte a permissões a rota 
 const permissionModule = require('../../common/PermissionModule'); // Tipos de permissões
+
+/**
+ * Lista todos os departamentos.
+ */
+router.get(
+    '/',
+    auth.required,
+    routePermission.check( [ [permissionModule.DEPARTMENT.select],[permissionModule.ROOT.select] ] ),
+    (req, res, next) => {
+        Department.find().populate(['departResponsible'])
+            .then(departments => res.json(departments))
+            .catch(next)
+    }
+)
+
+/**
+ * Listar por ID.
+ */
+router.get(
+    '/:id',
+    auth.required,
+    routePermission.check( [ [permissionModule.DEPARTMENT.select],[permissionModule.ROOT.select] ] ),
+    (req, res, next) => {
+        const { id } = req.params;
+        Department.findById(id).populate(['departResponsible'])
+            .then(department => {
+                if( department !== null) res.json(department)
+                else res.json({ error: 'ID Não encontrado'});
+            })
+            .catch(next)
+    }
+)
 
 
 /** 
@@ -21,7 +53,7 @@ router.delete(
         .then( department => {
             if( department !== null){
                 res.json( { department } );
-                // department.unrelateUserTables();
+                // department.unrelateDepartUserTables();
                 department.departResponsible.forEach( user => { // TODO: Migrar bloco para modelo Department
                     User.findByIdAndUpdate(user, { $pull: { departments: department._id } }) // Procura em Department e remove
                         .catch(next);
@@ -49,7 +81,7 @@ router.post(
                     return department; 
                 })
                 .then( department => {
-                    //department.relatesUserTables();
+                    //department.relatesDepartUserTables();
                     if ( departResponsible !== undefined ){
                         departResponsible.forEach(user => { // TODO: Migrar bloco para modelo Department
                             User.findByIdAndUpdate(user, { $push: { departments: department } })

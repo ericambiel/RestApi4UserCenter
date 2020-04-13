@@ -4,7 +4,7 @@ var auth = require('../../common/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../common/PermissionRoutes'); // Suporte a permissões a rota 
 const permissionModule = require('../../common/PermissionModule'); // Tipos de permissões
 
-const Permission = require('../../models/permission')
+const Permission = require('../../models/Permission')
 
 /** 
  * Listar as permissões de módulos. 

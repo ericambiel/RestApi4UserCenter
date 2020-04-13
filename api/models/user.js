@@ -1,13 +1,14 @@
 require("dotenv-safe").config(); // Configurações de ambiente.
 require('./estabFiscal'); // Necessários caso use referencia ao Model
-require('./department');
-const Permissions = require('./permission');
+require('./Department');
+const Permissions = require('./Permission');
 const mongoose = require('mongoose') // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
 const validator = require('validator') // Classe usada para validações de dados
 const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é dado é no banco
 const bcrypt = require('bcrypt'); // Criptografa senha a partir de um token.
-var jwt = require('jsonwebtoken'); // Gerador Token JWT.
+const mongooseHidden = require('mongoose-hidden')();
+var jwt = require('jsonwebtoken'); // Gerador Token JWT. 
 
 const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     userName: { 
@@ -40,7 +41,8 @@ const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
         type: String },
     hashedPass: {
         type: String, 
-        required: [true, 'Não pode estar em branco'] },
+        required: [true, 'Não pode estar em branco'],
+        hide: true }, // Esconde campo em um request 
     image: {
         type: String },
     isActive: { 
@@ -76,7 +78,7 @@ UserSchema.methods.setPassword = function(password) {
     if(typeof password !== 'undefined'){
         const saltRounds = 12; // >= 12 mais seguro, maior mais lento.
         this.hashedPass = bcrypt.hashSync(password, saltRounds, (err, result) => { // TODO: Mudar para Assíncrono.
-            console.log(`(Sistema): Em Hashing a senha - ${!err?'bcrypt':err} - ${Date()}`);
+            console.log(`(Sistema): Hashing a senha - ${!err?'bcrypt':err} - ${Date()}`);
             return result;
         });
     }
@@ -142,5 +144,6 @@ UserSchema.methods.toAuthJSON = async function() {
 };
 
 UserSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
+UserSchema.plugin(mongooseHidden, {defaultHidden: { autoHideJSON: 'false', autoHideObject: 'false' } }) // Biblioteca necessária para esconder campos. 'false' exibe _id
 
 module.exports = mongoose.model('User', UserSchema)

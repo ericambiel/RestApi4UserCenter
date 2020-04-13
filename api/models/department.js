@@ -1,4 +1,4 @@
-require('./user'); // Necessário para referencias
+require('./User'); // Necessário para referencias
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é dado é no banco
@@ -14,7 +14,7 @@ const DepartmentSchema = new Schema({
       ref: 'User'} ] } 
 }, {timestamps: true, collection: 'Departments'} )
 
-DepartmentSchema.methods.relatesUserTables = async function() {
+DepartmentSchema.methods.relatesDepartUserTables = async function() {
 //   if ( this.departResponsible !== undefined ){
 //     this.departResponsible.forEach(user => { 
 //         await User.findByIdAndUpdate(user, { $push: { departments: this._id } }) // TODO: erro: findByIdAndUpdate is not a function
@@ -23,7 +23,7 @@ DepartmentSchema.methods.relatesUserTables = async function() {
 //   }
 }
 
-DepartmentSchema.methods.unrelateUserTables = async function() {
+DepartmentSchema.methods.unrelateDepartUserTables = async function() {
   // TODO: Criar função para desvincular Departamento de usuário, esta sendo feito no endPoint
   // this.departResponsible.forEach( async user => { 
   //   await User.findByIdAndUpdate(user, { $pull: { departments: this._id } }) // TODO: erro: findByIdAndUpdate is not a function

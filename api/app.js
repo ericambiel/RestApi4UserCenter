@@ -14,7 +14,7 @@ require('./common/passport'); // Verificar se usuário é valido/BD
 
 // Variáveis das Rotas, add logo abaixo em use.nomeRouter
 var indexRouter = require('./routes/index');
-// var usersRouter = require('./routes/users');
+// var usersRouter = require('./routes/routeusers');
 // var contratosRouter = require('./routes/contratos');
 // var fileRouter = require('./routes/file');
 
@@ -66,7 +66,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuração das Rotas
 app.use('/', indexRouter);
-// app.use('/api/users', usersRouter);
+// app.use('/api/routeusers', usersRouter);
 // app.use('/api/contratos', contratosRouter);
 // app.use('/api/file', fileRouter);
 

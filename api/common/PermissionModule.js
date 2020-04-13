@@ -10,7 +10,9 @@ class PermissionModule {
     CONTRATO = {select:"contrato:select", insert:"contrato:insert", delete:"contrato:delete", update:"contrato:update"};
     USER = {select:"user:select", insert:"user:insert", delete:"user:delete", update:"user:update"};
     DEPARTMENT = {select:"department:select", insert:"department:insert", delete:"department:delete", update:"department:update"};
-    ROOT = {select:"root:select", insert:"root:insert", delete:"root:delete", update:"root:update"}
+    RH = {select:"rh:select", insert:"rh:insert", delete:"rh:delete", update:"rh:update"};
+    
+    ROOT = {select:"root:select", insert:"root:insert", delete:"root:delete", update:"root:update"};
 }
 
 permissionModule =  new PermissionModule();

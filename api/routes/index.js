@@ -5,16 +5,16 @@ router.get('/', function(req, res) {
 });
 
 // Redirecionamento de rota 
-router.use('/api/auth', require('./api/authentication'));
-router.use('/api/users', require('./api/users'));
-router.use('/api/contratos', require('./api/contratos'));
-router.use('/api/file', require('./api/file'));
-router.use('/api/permission', require('./api/permissions'));
-router.use('/api/department', require('./api/routedepartment'));
+router.use('/api/auth', require('./api/routeauthentication'));
+router.use('/api/users', require('./api/routeusers'));
+router.use('/api/contratos', require('./api/routecontratos'));
+router.use('/api/file', require('./api/routefiles'));
+router.use('/api/permission', require('./api/routepermissions'));
+router.use('/api/department', require('./api/routedepartments'));
 
 /**
  * Podem ser tratados erros caso ocorram para
- * que não voltem simplesmente como erro 500
+ * que não voltem simplesmente como erro 422
  */
 router.use((err, req, res, next) => { // Quando passamos um Middleware com 4 parâmetros sabe que é um erro handler  
   if(err.name === 'ValidationError'){ // ira devolver o erro de validação do mongoose.

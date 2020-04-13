@@ -5,7 +5,7 @@ const passport = require('passport');
 // const routePermission = require('../../common/PermissionRoutes');
 // const permissionModule = require('../../common/PermissionModule');
 
-// const User = require('../../models/user');
+// const User = require('../../models/User');
 
 
 /** Faz login do usuário no sistema */
