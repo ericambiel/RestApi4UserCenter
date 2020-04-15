@@ -105,8 +105,49 @@ router.post(
                 // })
                 // .catch(next);
             } catch (err) {
-                return res.status(400).send({ error: err.message})
+                return res.status(400).send({ errors: err.message})
             }
         });
+
+/**
+ * Atualiza informações de um departamento
+ */
+//TODO: FIX: Antes de apagar _id do responsável verificar em User se só a um depto associado ao usuário..
+router.patch(
+    '/:id', 
+    auth.required, 
+    routePermission.check([ [permissionModule.DEPARTMENT.update],[permissionModule.ROOT.update] ]), 
+    async (req, res, next) => {
+        const { id } = req.params;
+        const reqDepartResponsible = req.body.department.departResponsible;
+        
+        try{
+            await Department.findByIdAndUpdate(
+                id, 
+                req.body.department)
+                    .then(department => {
+                        //department.relatesDepartUserTables();
+                        if ( department !== null ){
+                            department.departResponsible.forEach(async user => { // TODO: Migrar bloco para modelo Department
+                                await User.findByIdAndUpdate(user, { $pull: { departments: department._id } })
+                                    .catch(next); // TODO: FIX: Não esta indo para response quando há erros
+                                });
+                            if( Array.isArray( reqDepartResponsible ) )
+                                reqDepartResponsible.forEach(responsible => {
+                                    User.findByIdAndUpdate(responsible, { $push: { departments: department._id } })
+                                        .catch(next); // TODO: FIX: Não esta indo para response quando há erros
+                                    });
+                        }
+                        return department 
+                    })
+                    .then(department => {
+                        department 
+                        ? res.json({ department: { id: department._id, message:'Departamento alterado'} }) 
+                        : res.status(400).json({ department: { message: 'ID não encontrado' } });
+                    });
+        }catch(err){
+            return res.status(400).send({ errors: err.message})
+        }
+});
 
 module.exports = router;

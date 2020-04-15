@@ -24,7 +24,7 @@ const multipartMiddleware = multipart({ uploadDir: `${dirFile}` }) // Quando for
  * @param {string} newFileName Novo nome do arquivo.
  */
 function renameFile(dirFile, fileName ,newFileName) {
-  // TODO: Arquivos de mesmo nome estão sendo sobrescritos, enviar mensagem que arquivo já existe!!!
+  // TODO: FIX: Arquivos de mesmo nome estão sendo sobrescritos, enviar mensagem que arquivo já existe!!!
   fs.rename(`${dirFile}/${fileName}`, `${dirFile}/${newFileName}`, err => {
     if ( err ) {
       console.log('ERROR: ' + err);

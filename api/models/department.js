@@ -14,19 +14,20 @@ const DepartmentSchema = new Schema({
       ref: 'User'} ] } 
 }, {timestamps: true, collection: 'Departments'} )
 
+// TODO: Criar controle para des-relacionar Departamento/Usuário em Modelo, esta sendo feito no endPoint
 DepartmentSchema.methods.relatesDepartUserTables = async function() {
 //   if ( this.departResponsible !== undefined ){
 //     this.departResponsible.forEach(user => { 
-//         await User.findByIdAndUpdate(user, { $push: { departments: this._id } }) // TODO: erro: findByIdAndUpdate is not a function
+//         await User.findByIdAndUpdate(user, { $push: { departments: this._id } }) // findByIdAndUpdate is not a function quando chamado pelo endPoint
 //                   .catch(err => console.log(err)) 
 //     });
 //   }
 }
 
+// TODO: Criar controle para des-relacionar Departamento/Usuário em Modelo, esta sendo feito no endPoint
 DepartmentSchema.methods.unrelateDepartUserTables = async function() {
-  // TODO: Criar função para desvincular Departamento de usuário, esta sendo feito no endPoint
   // this.departResponsible.forEach( async user => { 
-  //   await User.findByIdAndUpdate(user, { $pull: { departments: this._id } }) // TODO: erro: findByIdAndUpdate is not a function
+  //   await User.findByIdAndUpdate(user, { $pull: { departments: this._id } }) // findByIdAndUpdate is not a function quando chamado pelo endPoint
   //             .catch();
   // })
 }

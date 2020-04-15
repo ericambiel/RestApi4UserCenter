@@ -50,7 +50,7 @@ router.post(
 
     user.save()
       .then( async user => {
-        if ( user.departResponsible )
+        if ( user.departments )
           user.departments.map(department => {
              Department.findByIdAndUpdate(department, { $push: { departResponsible: user._id } })
                 .catch( next );
@@ -60,52 +60,93 @@ router.post(
       }).catch(next);
   });
 
+// TODO: Segmentar por funções
+// function deleteUser(id, callback, err){
+//   User.findByIdAndDelete(id)
+//       .then( user => {
+//         if (user)
+//           return user.departments.map(department => {
+//             return Department.findByIdAndUpdate(department, { $pull: { departResponsible: user._id } }, { new:true })
+//                 .then( department => { return department; })
+//                 .catch(err);
+//           })
+//         else return false;
+//       }).then( (department) => { 
+//          department 
+//           ? callback = { user: {id: id, message:'Usuário Removido'}, department: department } 
+//           : callback = { user: { message: 'ID não encontrado' } };
+//       })
+//       .catch(err);
+// }
+
 /** Deleta um usurário do sistema */
-// TODO: Criar método para apagar usuário do sistema, testar!!!
 router.delete(
   '/:id', 
   auth.required, 
   routePermission.check([ [permissionModule.RH.update], [permissionModule.ROOT.delete] ]), 
   (req, res, next) => {
     const { id } = req.params;
-    
+
+    // TODO: Verificar como segmentar por funções
+    // deleteUser(id, callback => {
+    //   res.json(callback)
+    // }, err => console.log(err))
+      
     User.findByIdAndDelete(id)
       .then( user => {
-        if ( user )
+        if (user)
           return user.departments.map(department => {
-            Department.findByIdAndUpdate(department, { $pull: { departResponsible: user._id } })
+            return Department.findByIdAndUpdate(department, { $pull: { departResponsible: user._id } }, { new:true })
                 .then( department => { return department; })
                 .catch( next );
           })
         else return false;
-      }).then( (depart) => { 
-        depart ? res.json( {user: {id: id, message:'Usuário Removido'} }) : res.json({user: { message: 'ID não encontrado' } }); 
+      }).then( (department) => { 
+        department 
+          ? res.json({ user: {id: id, message:'Usuário Removido'}, department: department }) 
+          : res.json({ user: { message: 'ID não encontrado' } }); 
       })
       .catch( next );
   }
 )
 
-/** Atualiza dados do Usuário pelo seu ID */
-//TODO: Falta relacionar com tabela de Departamentos
+/** Atualiza dados do Usuário pelo seu ID, relaciona Deptos ao Usuários */
+// TODO: Verificar em Schema User, esta deixando atualizar sem informações em um array.
 router.patch(
   '/:id', 
   auth.required, 
   routePermission.check([ [permissionModule.RH.update], [permissionModule.ROOT.update] ]), 
-  function(req, res, next) {
+  (req, res, next) => {
     const { id } = req.params;
+    const  reqDepartments  = req.body.user.departments;
     delete req.body.user.userName; // Remove a userName dos itens
 
-    User.findByIdAndUpdate(id, req.body.user, {new: true })
-      .then((user) => {
-        if(!user) return res.sendStatus(401); 
-        else {
+    User.findByIdAndUpdate(id, req.body.user)
+      .then(async user => {
+        if(user) { 
           user.setPassword(req.body.user.password);
-
-          return user.save().then(user => {
-            return res.json({user: user});
+          // TODO: Verificar pq trás undefined mesmo satisfazendo promessas, depto apagado não esta sendo exibido no retorno.
+          await user.save().then( user => {  // Apaga todos os relacionamentos antigos entre depto. e usuário
+            user.departments.map( department => {
+              return Department.findByIdAndUpdate(department, { $pull: { departResponsible: user._id } }, { new:true } )
+                  .then( department => { return department; })
+                  .catch( next );
+            })
+            // Refaz todos os relácionamentos novos entre depto. e usuário.
+            if( Array.isArray( reqDepartments ) )
+              reqDepartments.forEach( reqDepartment => {
+                return Department.findByIdAndUpdate(reqDepartment, { $push: { departResponsible: user._id } }, { new:true })
+                  .then( department => { return department })
+                  .catch( next );
+            });
           });
+          return user;
         }
-    }).catch(next);
+      }).then(user => {
+        user 
+        ? res.json({ user: { id: user._id, message:'Usuário Alterado'} }) 
+        : res.status(400).json({ user: { message: 'ID não encontrado' } }); 
+      }).catch(next);
 });
 
 /** Atualiza dados do usuário (Ele mesmo) */

@@ -1,6 +1,6 @@
 require("dotenv-safe").config(); // Configurações de ambiente.
 require('./estabFiscal'); // Necessários caso use referencia ao Model
-require('./Department');
+const Departments = require('./Department');
 const Permissions = require('./Permission');
 const mongoose = require('mongoose') // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
@@ -104,15 +104,33 @@ UserSchema.methods.generateJWT = async function() {
     // var exp = new Date(today);
     // exp.setMinutes(today.getMinutes() + Number(process.env.EXPIRE_USER_TIME));*/
 
-    let _permissions = [];
-
-    await Permissions.find( { _id: this.permissions })
+    const _permissions = await Permissions.find( { _id: this.permissions } )
         .then( permissions => {
+            const _permissions = new Set(); 
             // _permissions = permissions; // Enviar objeto inteiro com _id, comentar linhas map
             permissions.map( permission => {
-                _permissions.push(permission.permission);
+                _permissions.add(permission.permission);
             })
+            return Array.from(_permissions);
         });
+    
+    const _departments = await Departments.find( { _id: this.departments } )
+        // .populate(['departResponsible'])
+        .then(departments => {
+
+            const _departments = {myDepartments:new Set(), myResponsible:new Set()}
+
+            //Mapeia valores 
+            departments.map( department => {
+                _departments.myDepartments.add(department._id.toString());
+                department.departResponsible.forEach(responsible => { 
+                    _departments.myResponsible.add(responsible.toString()); 
+                });
+            });
+            return _departments;
+        });
+
+        console.log(_departments.myDepartments);
         
     // Cria Payload, aqui você deve definir qual objetos estarão no Payload do JWT.
     return jwt.sign({
@@ -121,7 +139,8 @@ UserSchema.methods.generateJWT = async function() {
         name: this.name,
         surname: this.surname,
         image: this.image,
-        departments: this.departments,
+        departments: Array.from(_departments.myDepartments),
+        responsible: Array.from(_departments.myResponsible),
         permissions: _permissions,
         //exp: parseInt(exp.getTime() / 1000), // caso não use opção expiresIn descomentar
     }, process.env.SECRET_JWT, 
@@ -130,7 +149,6 @@ UserSchema.methods.generateJWT = async function() {
     })
 }
     
-
 /** Devolve Autenticação TOKEN JWT + objetos fora do token se precisar */
 UserSchema.methods.toAuthJSON = async function() {    
     // Retorna esses valores para o endPoint
