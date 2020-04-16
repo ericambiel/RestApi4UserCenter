@@ -1,10 +1,10 @@
 const mongoose = require('mongoose'); // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
 
-const Departamento = require('./departamento');
-const Documento = require('./documento');
+// const Departamento = require('./departamento');
+const Documento = require('./Documento');
 
-const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
+const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     objeto: { type: String, required: [true, 'Não pode estar em branco'] },
     estabFiscal: { type: String},
     parceiro: { type: String, required: [true, 'Não pode estar em branco'] },
@@ -16,7 +16,7 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     valMensal: { type: Number },
     dataInicio: { type: Date },
     dataFim: { type: Date },
-    deptoPartList: { type : Departamento, default: [] }, // Lista de Departamentos associados
+    deptoPartList: { type : [ {departamento: { type: String } } ], default: [] }, // TODO: Criar referências entre modelo departamento. 
     indReajuste: { type: String },
     diaAntecedencia: { type: Number },  // Dias de antecedencia
     obs: { type: String },
@@ -59,4 +59,4 @@ const contratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
 //     },
 // }
 
-module.exports = mongoose.model('Contrato', contratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado
+module.exports = mongoose.model('Contrato', ContratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado
