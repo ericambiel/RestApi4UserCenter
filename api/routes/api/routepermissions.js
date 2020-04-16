@@ -20,7 +20,7 @@ router.get('/', auth.required, routePermission.check(permissionModule.ROOT.selec
    * Já faz a ligação entre Body da request e objeto modelo Permissão.
    */
   router.post('/', auth.required, routePermission.check(permissionModule.ROOT.insert), (req, res) => {
-    const permissions = new Permission(req.body)
+    const permissions = new Permission(req.body.permission)
     permissions.save()
       .then(result => res.json(result))
       .catch(error => res.send(error));

@@ -109,7 +109,7 @@ UserSchema.methods.generateJWT = async function() {
             const _permissions = new Set(); 
             // _permissions = permissions; // Enviar objeto inteiro com _id, comentar linhas map
             permissions.map( permission => {
-                _permissions.add(permission.permission);
+                _permissions.add(permission.description);
             })
             return Array.from(_permissions);
         });
@@ -120,17 +120,16 @@ UserSchema.methods.generateJWT = async function() {
 
             const _departments = {myDepartments:new Set(), myResponsible:new Set()}
 
-            //Mapeia valores 
+            //Mapeia valores departamentos
             departments.map( department => {
-                _departments.myDepartments.add(department._id.toString());
+                //TODO: Quando os relacionamentos entre departamentos dos contratos e usuários forem feitos, enviar somente _IDs.
+                _departments.myDepartments.add({_id:department._id.toString(), description:department.description.toString()});
                 department.departResponsible.forEach(responsible => { 
                     _departments.myResponsible.add(responsible.toString()); 
                 });
             });
             return _departments;
         });
-
-        console.log(_departments.myDepartments);
         
     // Cria Payload, aqui você deve definir qual objetos estarão no Payload do JWT.
     return jwt.sign({
@@ -139,6 +138,8 @@ UserSchema.methods.generateJWT = async function() {
         name: this.name,
         surname: this.surname,
         image: this.image,
+        //TODO: Relacionar departamentos dos contratos e usuários, enviar somente _IDs não necessário "Mapeia valores departamentos"
+        //departments: this.departments, 
         departments: Array.from(_departments.myDepartments),
         responsible: Array.from(_departments.myResponsible),
         permissions: _permissions,

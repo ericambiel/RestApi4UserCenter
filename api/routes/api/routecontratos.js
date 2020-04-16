@@ -6,28 +6,53 @@ const permissionModule = require('../../common/PermissionModule'); // Tipos de p
 
 const Contrato = require('../../models/Contrato')
 
-/** 
- * Listar todos documentos de Contratos 
- */ 
+// /** 
+//  * Listar todos documentos de Contratos 
+//  */ 
+// router.get(
+//   '/', 
+//   auth.required, 
+//   routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
+//   (req, res) => {
+//     Contrato.find()
+//     .then(result => res.json(result))
+//     .catch(error => res.send(error))
+//   });
+
+function isResponsible(payloadJWT) {
+  let isResponsible = false;
+  payloadJWT.responsible.forEach(responsible => {
+    if (payloadJWT._id === responsible) isResponsible = true;
+  });
+  return isResponsible;
+}
+
+/** Lista contratos filtrando pelo departamento do usuário. */
 router.get(
-  '/', 
+  '/',
   auth.required, 
   routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
-  (req, res) => {
-    Contrato.find()
-    .then(result => res.json(result))
-    .catch(error => res.send(error))
-  });
-
-  router.get(
-    '/',
-    auth.required, 
-    routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
-    (req, res) => {
-      Contrato.find()
-      .then(result => res.json(result))
-      .catch(error => res.send(error))
-  });
+  async(req, res) => {
+    const payloadJWT = req.payload;
+    try{
+      if(isResponsible(req.payload)){
+        // //TODO: Quando os relacionamentos entre departamentos dos contratos e usuários forem feitos, receba somente _IDs dos usuários.
+        // // MAP retorna array com departamentos do usuário  
+        const departments = payloadJWT.departments.map(department => {return department.description});
+        // find trás contratos para os responsáveis que estão em Depto. Participantes OU Responsáveis para qualquer contrato.
+        Contrato.find(
+            { $or:[ 
+              {'deptoPartList.departamento': departments}, {'deptoResponsavel': departments} 
+            ]} 
+        )
+        .then(result => res.json(result) )
+        .catch(error => res.json(error) );
+      } else res.status(400).json({
+          errors: {contratos: 'Você não permissão para visualizar os contratos, contate a administração.'} });
+    }catch(err){
+      return res.status(400).send({ errors: err.message})
+    }
+});
 
 /**
  * Insere documento em Contratos

@@ -50,17 +50,17 @@ router.post(
 
     user.save()
       .then( async user => {
-        if ( user.departments )
-          user.departments.map(department => {
-             Department.findByIdAndUpdate(department, { $push: { departResponsible: user._id } })
-                .catch( next );
-          })
+        // if ( user.departments ) // TODO: Não é necessário ao inserir(apagar bloco).
+        //   user.departments.map(department => {
+        //      Department.findByIdAndUpdate(department, { $push: { departResponsible: user._id } })
+        //         .catch( next );
+        //   })
         await res.json({user: user}); 
         // await res.json({user: await user.toAuthJSON()}); //Retorna JWT
       }).catch(next);
   });
 
-// TODO: Segmentar por funções
+// TODO: Segmentar para funções, ler TODO abaixo
 // function deleteUser(id, callback, err){
 //   User.findByIdAndDelete(id)
 //       .then( user => {
@@ -87,7 +87,7 @@ router.delete(
   (req, res, next) => {
     const { id } = req.params;
 
-    // TODO: Verificar como segmentar por funções
+    // TODO: Verificar como extrair bloco para função separada
     // deleteUser(id, callback => {
     //   res.json(callback)
     // }, err => console.log(err))
@@ -118,7 +118,7 @@ router.patch(
   routePermission.check([ [permissionModule.RH.update], [permissionModule.ROOT.update] ]), 
   (req, res, next) => {
     const { id } = req.params;
-    const  reqDepartments  = req.body.user.departments;
+    //const  reqDepartments  = req.body.user.departments;
     delete req.body.user.userName; // Remove a userName dos itens
 
     User.findByIdAndUpdate(id, req.body.user)
@@ -126,19 +126,21 @@ router.patch(
         if(user) { 
           user.setPassword(req.body.user.password);
           // TODO: Verificar pq trás undefined mesmo satisfazendo promessas, depto apagado não esta sendo exibido no retorno.
-          await user.save().then( user => {  // Apaga todos os relacionamentos antigos entre depto. e usuário
+          // TODO: Alertar quando usuário a ser modificado for responsável da area. Remove do campo responsibleDep... quando responsável da depto.
+          await user.save().then( user => {  // Apaga todos os relacionamentos antigos entre depto. e usuário se responsável do depto.
             user.departments.map( department => {
               return Department.findByIdAndUpdate(department, { $pull: { departResponsible: user._id } }, { new:true } )
                   .then( department => { return department; })
                   .catch( next );
             })
-            // Refaz todos os relácionamentos novos entre depto. e usuário.
-            if( Array.isArray( reqDepartments ) )
-              reqDepartments.forEach( reqDepartment => {
-                return Department.findByIdAndUpdate(reqDepartment, { $push: { departResponsible: user._id } }, { new:true })
-                  .then( department => { return department })
-                  .catch( next );
-            });
+            // TODO: FIX: desabilitado pois torna o usuário responsável de sua area ao ser modificado.
+            // Refaz os novos relácionamentos entre depto. e este usuário, 
+            // if( Array.isArray( reqDepartments ) )
+            //   reqDepartments.forEach( reqDepartment => {
+            //     return Department.findByIdAndUpdate(reqDepartment, { $push: { departResponsible: user._id } }, { new:true })
+            //       .then( department => { return department })
+            //       .catch( next );
+            // });
           });
           return user;
         }
