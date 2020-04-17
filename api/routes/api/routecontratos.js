@@ -6,28 +6,74 @@ const permissionModule = require('../../common/PermissionModule'); // Tipos de p
 
 const Contrato = require('../../models/Contrato')
 
+// /** 
+//  * Listar todos documentos de Contratos 
+//  */ 
+// router.get(
+//   '/', 
+//   auth.required, 
+//   routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
+//   (req, res) => {
+//     Contrato.find()
+//     .then(result => res.json(result))
+//     .catch(error => res.send(error))
+//   });
+
+/**
+ * Listara quais departamentos o usuário em Payload é responsável
+ * @param {*} payloadJWT Payload com informações do usuário.
+ * @returns {Array} Retorna lista com departamentos responsável.
+ */
+function imResponsibleFor(payloadJWT) {
+  try{
+    let imResponsibleFor = new Set(); // Não deixa add valores repetidos.
+    payloadJWT.departments.map(department => {
+      department.departResponsible.map(responsible => {
+        if (responsible === payloadJWT._id) 
+          imResponsibleFor.add(department.description);
+        });
+    });
+    imResponsibleFor = Array.from(imResponsibleFor); // Transforma em um Array
+    return imResponsibleFor;
+  }catch(err) { return new Error(err); }
+}
+
 /** 
- * Listar todos documentos de Contratos 
- */ 
+ * Lista contratos filtrando pelo departamento do usuário. 
+ * Caso for do departamento "Controladoria" exibe todos, caso contrario e 
+ * se responsável, exibe somente contratos associados ao seu departamento.
+*/
 router.get(
-  '/', 
+  '/',
   auth.required, 
   routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
-  (req, res) => {
-    Contrato.find()
-    .then(result => res.json(result))
-    .catch(error => res.send(error))
-  });
-
-  router.get(
-    '/',
-    auth.required, 
-    routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
-    (req, res) => {
-      Contrato.find()
-      .then(result => res.json(result))
-      .catch(error => res.send(error))
-  });
+  async(req, res) => {
+    try{
+      const auditDepartment = 'Controladoria'; // Responsável pelo depto. que pode ver todos os contratos.
+      const _imResponsibleFor = imResponsibleFor(req.payload);
+    
+      //TODO: Quando os relacionamentos entre departamentos dos contratos e usuários forem feitos, comparar com _id do departamento.
+      if( _imResponsibleFor.includes(auditDepartment) ) { // Se da Controladoria/Auditoria.
+        Contrato.find()
+          .then(result => res.json(result) )
+          .catch(error => res.json(error) );
+      } else if(_imResponsibleFor.length > 0 ) { // Se maior que 0, usuário é responsável por algum Depto.        
+        // find trás contratos para os responsáveis que estão em Depto. Participantes OU Responsáveis para qualquer contrato.7
+        Contrato.find(
+            { $or:[ 
+              {'deptoPartList.departamento': _imResponsibleFor}, {'deptoResponsavel': _imResponsibleFor} 
+            ]} 
+          )
+          .then(result => res.json(result) )
+          .catch(error => res.json(error) );
+      } else res.status(400).json({
+          errors: {contratos: 
+            'Você não possui permissão para visualizar os contratos,\n necessário ser responsável do departamento.'} 
+        });
+    }catch(err){
+      return res.status(400).send({ errors: err.message})
+    }
+});
 
 /**
  * Insere documento em Contratos

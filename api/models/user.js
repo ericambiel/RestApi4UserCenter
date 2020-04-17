@@ -109,28 +109,35 @@ UserSchema.methods.generateJWT = async function() {
             const _permissions = new Set(); 
             // _permissions = permissions; // Enviar objeto inteiro com _id, comentar linhas map
             permissions.map( permission => {
-                _permissions.add(permission.permission);
+                _permissions.add(permission.description);
             })
             return Array.from(_permissions);
+        }).catch((err) => {
+            console.log(err); 
+            return {errors: 'Erro ao selecionar Permissões'};
         });
     
     const _departments = await Departments.find( { _id: this.departments } )
-        // .populate(['departResponsible'])
+    // .populate(['departResponsible'])
+        .select(['-createdAt','-updatedAt','-__v']) // Exclue da seleção
         .then(departments => {
+            return departments;
 
-            const _departments = {myDepartments:new Set(), myResponsible:new Set()}
+            // const _departments = {myDepartments:new Set(), myResponsible:new Set()}
 
-            //Mapeia valores 
-            departments.map( department => {
-                _departments.myDepartments.add(department._id.toString());
-                department.departResponsible.forEach(responsible => { 
-                    _departments.myResponsible.add(responsible.toString()); 
-                });
-            });
-            return _departments;
+            // // Mapeia valores departamentos
+            // departments.map( department => {
+            //     //TODO: Quando os relacionamentos entre departamentos dos contratos e usuários forem feitos, enviar somente _IDs.
+            //     _departments.myDepartments.add({_id:department._id.toString(), description:department.description.toString()}, );
+            //     department.departResponsible.forEach(responsible => { 
+            //         _departments.myResponsible.add(responsible.toString()); 
+            //     });
+            // });
+            // return _departments;
+        }).catch((err) => {
+            console.log(err); 
+            return {errors: 'Erro ao selecionar Departamentos'};
         });
-
-        console.log(_departments.myDepartments);
         
     // Cria Payload, aqui você deve definir qual objetos estarão no Payload do JWT.
     return jwt.sign({
@@ -139,8 +146,11 @@ UserSchema.methods.generateJWT = async function() {
         name: this.name,
         surname: this.surname,
         image: this.image,
-        departments: Array.from(_departments.myDepartments),
-        responsible: Array.from(_departments.myResponsible),
+        //TODO: Relacionar departamentos dos contratos e usuários, enviar somente _IDs não necessário "Mapeia valores departamentos"
+        // departments: this.departments, // Somente _id dos departamentos
+        departments: _departments,
+        // departments: Array.from(_departments.myDepartments),
+        // responsible: Array.from(_departments.myResponsible),
         permissions: _permissions,
         //exp: parseInt(exp.getTime() / 1000), // caso não use opção expiresIn descomentar
     }, process.env.SECRET_JWT, 

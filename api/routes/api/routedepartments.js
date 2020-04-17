@@ -128,11 +128,12 @@ router.patch(
                     .then(department => {
                         //department.relatesDepartUserTables();
                         if ( department !== null ){
-                            department.departResponsible.forEach(async user => { // TODO: Migrar bloco para modelo Department
-                                await User.findByIdAndUpdate(user, { $pull: { departments: department._id } })
-                                    .catch(next); // TODO: FIX: Não esta indo para response quando há erros
-                                });
-                            if( Array.isArray( reqDepartResponsible ) )
+                        // TODO: Bloco remove departamento do usuário caso deixe de ser responsável, não é mais a politica mais, apagar!!! 
+                        //     department.departResponsible.forEach(async user => { // TODO: Migrar bloco para modelo Department
+                        //         await User.findByIdAndUpdate(user, { $pull: { departments: department._id } })
+                        //             .catch(next); // TODO: FIX: Não esta indo para response quando há erros
+                        //         });
+                            if( Array.isArray( reqDepartResponsible ) ) // TODO: FIX: Esta reinserindo relacionamento em User mesmo se já há.
                                 reqDepartResponsible.forEach(responsible => {
                                     User.findByIdAndUpdate(responsible, { $push: { departments: department._id } })
                                         .catch(next); // TODO: FIX: Não esta indo para response quando há erros
