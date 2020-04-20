@@ -1,7 +1,7 @@
 require("dotenv-safe").config(); // Configurações de ambiente.
 require('./estabFiscal'); // Necessários caso use referencia ao Model
-const Departments = require('./Department');
-const Permissions = require('./Permission');
+const Departments = require('./department');
+const Permissions = require('./permission');
 const mongoose = require('mongoose') // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
 const validator = require('validator') // Classe usada para validações de dados

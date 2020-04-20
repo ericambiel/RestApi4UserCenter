@@ -1,10 +1,10 @@
 const router = require('express').Router();
-const User = require('../../models/User');
-const Department = require('../../models/Department');
+const User = require('../../schemas/user');
+const Department = require('../../schemas/department');
 
-var auth = require('../../common/auth'); // Verifica validade do TOKEN
-const routePermission = require('../../common/PermissionRoutes'); // Suporte a permissões a rota 
-const permissionModule = require('../../common/PermissionModule'); // Tipos de permissões
+var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
+const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
+const permissionModule = require('../../../lib/PermissionModule'); // Tipos de permissões
 
 // const mongoose = require('mongoose');
 // const User = mongoose.model('User');

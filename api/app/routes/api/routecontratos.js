@@ -1,10 +1,11 @@
 var router = require('express').Router();
 
-var auth = require('../../common/auth'); // Verifica validade do TOKEN
-const routePermission = require('../../common/PermissionRoutes'); // Suporte a permissões a rota 
-const permissionModule = require('../../common/PermissionModule'); // Tipos de permissões
+var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
+const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
+const permissionModule = require('../../../lib/PermissionModule'); // Tipos de permissões
+const mail = require('../../../lib/Mail');
 
-const Contrato = require('../../models/Contrato')
+const Contrato = require('../../schemas/contrato');
 
 // /** 
 //  * Listar todos documentos de Contratos 
@@ -18,6 +19,27 @@ const Contrato = require('../../models/Contrato')
 //     .then(result => res.json(result))
 //     .catch(error => res.send(error))
 //   });
+
+/**
+ * Envia email com contrato expirado para gestor da Controladoria.
+ * @param {User} user 
+ * @param {Contrato} contrato 
+ */
+function alertExpireContrato(user, contrato) {
+  const id = '1a2c3d4f4g5'
+  const email = 'eric.ambiel@gmail.com'
+
+  mail.transporter.sendMail({
+    to: email,
+    from: 'alert@mybusiness.com',
+    templete: 'contratos/expired_contract',
+    context: { id },
+  }, (err, info) => {
+    if (err)
+      return console.log(err);
+    return info;
+  })
+}
 
 /**
  * Listara quais departamentos o usuário em Payload é responsável
@@ -37,6 +59,20 @@ function imResponsibleFor(payloadJWT) {
     return imResponsibleFor;
   }catch(err) { return new Error(err); }
 }
+
+router.post('/expirados',
+auth.required, 
+routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
+async(req, res) => {
+  try{
+    
+    const _alertExpireContrato = await mail.sendMail("Menssagem de teste");
+    res.json(_alertExpireContrato)
+  }
+  catch(err){
+    return res.status(400).send({ errors: err.message});
+  }
+})
 
 /** 
  * Lista contratos filtrando pelo departamento do usuário. 
@@ -64,8 +100,8 @@ router.get(
               {'deptoPartList.departamento': _imResponsibleFor}, {'deptoResponsavel': _imResponsibleFor} 
             ]} 
           )
-          .then(result => res.json(result) )
-          .catch(error => res.json(error) );
+          .then(result => res.json(result))
+          .catch(error => res.json(error));
       } else res.status(400).json({
           errors: {contratos: 
             'Você não possui permissão para visualizar os contratos,\n necessário ser responsável do departamento.'} 
