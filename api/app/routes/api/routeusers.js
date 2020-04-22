@@ -4,7 +4,7 @@ const Department = require('../../schemas/department');
 
 var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
-const permissionModule = require('../../../lib/PermissionModule'); // Tipos de permissões
+const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
 // const mongoose = require('mongoose');
 // const User = mongoose.model('User');

@@ -12,8 +12,10 @@ class Mail {
 
     this.transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
-      port: process.env.MAIL_PORT,
-      secure: false, // true for 465, false for other ports
+      port: 465,
+      secure: process.env.MAIL_SECURE === 'true' ? true : false, // true for 465, false for other ports
+      tls:{ requireTLS : true }, // Tentara encriptar o email, caso contrario não enviara
+      // logger: true, // Logar na tela dados do nodemailer
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD
@@ -24,32 +26,48 @@ class Mail {
   }
 
   configureTemplates() {
-    const viewPath = resolve(__dirname, '..', 'api', 'resource', 'mail');
+    const viewPath = resolve(__dirname, '..', 'views', 'mail');
 
     this.transporter.use(
       'compile',
       nodemailerhbs({
         viewEngine: exphbs.create({
-          // layoutsDir: resolve(viewPath, 'layouts'),
-          layoutsDir: resolve(viewPath, 'contratos'),
-          // partialsDir: resolve(viewPath, 'partials'),
-          partialsDir: resolve(viewPath, 'contratos'),
+          layoutsDir: resolve(viewPath, 'layouts'),
+          partialsDir: resolve(viewPath, 'partials'),
           defaultLayout: 'default',
-          // extname: '.hbs',
-          extname: '.html',
+          extname: '.hbs',
         }),
         viewPath,
-        // extName: '.hbs',
-        extName: '.html',
+        extName: '.hbs',
       })
     );
   }
 
-  sendMail(message) {
+  /**
+   * Envia email
+   * @param message Objeto contendo dados para envio de email.
+   */
+  sendMail(config) {
+    let message = { ...config }
+    message.context.companyName = process.env.COMPANY_NAME;
+    message.context.companyLogo = process.env.COMPANY_LOGO;
+    message.context.companySite = process.env.COMPANY_SITE;
+    
     return this.transporter.sendMail({
       from: 'Administradores <alert@mybusiness.com>',
       ...message,
     });
+  }
+
+  /**
+   * Verifica se servidor SMTP configurado esta apto a 
+   * enviar seus E-Mails.
+   */
+  verifyServerIsOk(){
+    this.transporter.verify(function(error, success) {
+      if (error) return (error);
+      else return(`O servidor configurado esta apto para enviar seus E-Mails: ${success}`);
+    }); 
   }
 }
 module.exports = new Mail();

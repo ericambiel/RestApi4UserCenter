@@ -2,7 +2,7 @@ var router = require('express').Router();
 
 var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
-const permissionModule = require('../../../lib/PermissionModule'); // Tipos de permissões
+const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
 const Permission = require('../../schemas/permission')
 

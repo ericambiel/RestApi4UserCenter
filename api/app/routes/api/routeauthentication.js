@@ -3,7 +3,7 @@ const passport = require('passport');
 
 // var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 // const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
-// const permissionModule = require('../../../lib/PermissionModule'); // Tipos de permissões
+// const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
 // const User = require('../../schemas/user');
 

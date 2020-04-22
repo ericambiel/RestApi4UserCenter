@@ -2,7 +2,7 @@ var router = require('express').Router();
 
 var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
-const permissionModule = require('../../../lib/PermissionModule'); // Tipos de permissões
+const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 const mail = require('../../../lib/Mail');
 
 const Contrato = require('../../schemas/contrato');
@@ -19,27 +19,6 @@ const Contrato = require('../../schemas/contrato');
 //     .then(result => res.json(result))
 //     .catch(error => res.send(error))
 //   });
-
-/**
- * Envia email com contrato expirado para gestor da Controladoria.
- * @param {User} user 
- * @param {Contrato} contrato 
- */
-function alertExpireContrato(user, contrato) {
-  const id = '1a2c3d4f4g5'
-  const email = 'eric.ambiel@gmail.com'
-
-  mail.transporter.sendMail({
-    to: email,
-    from: 'alert@mybusiness.com',
-    templete: 'contratos/expired_contract',
-    context: { id },
-  }, (err, info) => {
-    if (err)
-      return console.log(err);
-    return info;
-  })
-}
 
 /**
  * Listara quais departamentos o usuário em Payload é responsável
@@ -65,8 +44,22 @@ auth.required,
 routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
 async(req, res) => {
   try{
-    
-    const _alertExpireContrato = await mail.sendMail("Menssagem de teste");
+
+    const user = { name: 'Eric Clapton', email: 'eric.clapton@mybusiness.com' }
+    const contrato = { _id: '4s8d48as4d8a4sd', dateFim: '19/04/2020' }
+
+    const _alertExpireContrato = 
+      await mail.sendMail({
+        to: `${user.name} <${user.email}>`,
+        subject: 'Alerta de Contrato(s) Expirado(s)',
+        template: 'expired_contract',
+        context: {
+          user: user.name,
+          contrato: contrato._id,
+          dataFim: contrato.dateFim,
+        },
+      });
+
     res.json(_alertExpireContrato)
   }
   catch(err){

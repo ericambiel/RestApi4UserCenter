@@ -6,7 +6,7 @@ var fs = require('fs');
 
 var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
-const permissionModule = require('../../../lib/PermissionModule'); // Tipos de permissões
+const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
 //var dirFile = path.dirname(__dirname); //Volta um diretório. // Descometar para gravar em public quando dev
 //const multipartMiddleware = multipart({ uploadDir: `./${config.diretorioContratos}` }) // Descometar para gravar em public quando dev
