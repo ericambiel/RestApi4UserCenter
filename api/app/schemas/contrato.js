@@ -1,8 +1,8 @@
 const mongoose = require('mongoose'); // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
 
-// const Departamento = require('./departamento');
-const Documento = require('./documento');
+// const Departamento = require('./departamento'); 
+// const Documento = require('./documento');
 
 const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     objeto: { type: String, required: [true, 'Não pode estar em branco'] },
@@ -22,7 +22,17 @@ const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     obs: { type: String },
     historico: { type: String },
     anaJuridico: { type: Boolean },     // Analise juridica
-    documentoList: { type : Documento, default: [] },
+    //documentoList: { type : Documento, default: [] },
+    documentoList: { type : [ {
+                                nome: { type: String },
+                                descricao: { type: String },
+                                diretorio: { type: String , default: process.env.UPLOAD_DIR_CONTARTOS },
+                                tipo: { type: String },
+                                numAditivo: { type: Number }, // Sequência logica do documento
+                                dataInsert: { type: Date },
+                            } ], 
+                            default: [] 
+                    }, 
     natureza: { type: String } 
 }, {collection: 'Contratos'});
 

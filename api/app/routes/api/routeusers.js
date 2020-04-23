@@ -9,6 +9,20 @@ const permissionModule = require('../../../config/PermissionModule'); // Tipos d
 // const mongoose = require('mongoose');
 // const User = mongoose.model('User');
 
+/**
+ * Compara valores de dois arrays e retorna valores
+ * que não estão no array atual.
+ * @param {Array} previousArray Lista com valores antigos 
+ * @param {Array} currentArray Lista com valores atuais
+ * @returns {Array} Lista com valores não encontrados no array atual.
+ */
+function missingInArray(previousArray, currentArray){
+  if( Array.isArray( previousArray ) && Array.isArray( currentArray )) {
+    let currentSet = new Set(currentArray);
+    return previousArray.filter(x => !currentSet.has(x));
+  }
+}
+
 /* Listar todos os Usuário */
 router.get(
   '/', 
@@ -118,35 +132,34 @@ router.patch(
   routePermission.check([ [permissionModule.RH.update], [permissionModule.ROOT.update] ]), 
   (req, res, next) => {
     const { id } = req.params;
-    //const  reqDepartments  = req.body.user.departments;
-    delete req.body.user.userName; // Remove a userName dos itens
+    const  reqDepartments  = req.body.user.departments;
+    delete req.body.user.userName; // Remove a userName dos itens para que não possa altera-lo
 
     User.findByIdAndUpdate(id, req.body.user)
       .then(async user => {
         if(user) { 
-          user.setPassword(req.body.user.password);
+          await user.setPassword(req.body.user.password);
           // TODO: Verificar pq trás undefined mesmo satisfazendo promessas, depto apagado não esta sendo exibido no retorno.
           // TODO: Alertar quando usuário a ser modificado for responsável da area. Remove do campo responsibleDep... quando responsável da depto.
-          await user.save().then( user => {  // Apaga todos os relacionamentos antigos entre depto. e usuário se responsável do depto.
-            user.departments.map( department => {
-              return Department.findByIdAndUpdate(department, { $pull: { departResponsible: user._id } }, { new:true } )
-                  .then( department => { return department; })
-                  .catch( next );
-            })
-            // TODO: FIX: desabilitado pois torna o usuário responsável de sua area ao ser modificado.
-            // Refaz os novos relácionamentos entre depto. e este usuário, 
-            // if( Array.isArray( reqDepartments ) )
-            //   reqDepartments.forEach( reqDepartment => {
-            //     return Department.findByIdAndUpdate(reqDepartment, { $push: { departResponsible: user._id } }, { new:true })
-            //       .then( department => { return department })
-            //       .catch( next );
-            // });
+          user.save().then( user => {  // Apaga todos os relacionamentos antigos entre depto. e usuário se responsável do depto.        
+            // Converte Array Mongo ObjectId para Array String
+            const previousDepartment = user.departments.map(department => { return department._id.toString() });
+            // Retorna _IDs dos deptos que foram apagadas do usuário
+            const missingDepartsID = missingInArray(previousDepartment, reqDepartments);
+
+            if(missingDepartsID.length > 0)
+              // Removera ID do do usuário do departamento ao qual ele não faz mais parte
+              missingDepartsID.forEach( missingDepartID => {
+                return Department.findByIdAndUpdate(missingDepartID, { $pull: { departResponsible: user._id } }, { new:true } )
+                    .then( department => { return department; })
+                    .catch( next );
+              });           
           });
           return user;
         }
       }).then(user => {
         user 
-        ? res.json({ user: { id: user._id, message:'Usuário Alterado'} }) 
+        ? res.json({ user: { id: user._id, message:'Usuário alterado'} }) 
         : res.status(400).json({ user: { message: 'ID não encontrado' } }); 
       }).catch(next);
 });

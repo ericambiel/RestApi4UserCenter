@@ -7,6 +7,9 @@ const mail = require('../../../lib/Mail');
 
 const Contrato = require('../../schemas/contrato');
 
+const moment = require('moment');
+const imask = require('imask');
+
 // /** 
 //  * Listar todos documentos de Contratos 
 //  */ 
@@ -39,28 +42,64 @@ function imResponsibleFor(payloadJWT) {
   }catch(err) { return new Error(err); }
 }
 
-router.post('/expirados',
+/**
+ * Formata para CFP po CNPJ, limpa string caso
+ * hajam caracteres que não sejam números.
+ * @param {*} cnpjOrCpf 
+ * @returns Retorna CPF ou CNPJ formatado.
+ */
+function maskCnpjOrCpf(cnpjOrCpf){
+  const value = cnpjOrCpf.toString().replace(/[^0-9]+/g, '');
+  const option = { cpf: { mask: '000.000.000-00' }, cnpj: { mask: '00.000.000/0000-00' }};
+  let maskedValue;
+
+  if (value.length <= 0) return "Campo esta vazio";
+  else if(value.length <= 11) maskedValue = imask.createMask(option.cpf).resolve(value);
+  else maskedValue = imask.createMask(option.cnpj).resolve(value);
+
+  return maskedValue;
+}
+
+router.get('/expirados',
 auth.required, 
 routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
-async(req, res) => {
+(req, res) => {
   try{
-
-    const user = { name: 'Eric Clapton', email: 'eric.clapton@mybusiness.com' }
-    const contrato = { _id: '4s8d48as4d8a4sd', dateFim: '19/04/2020' }
-
-    const _alertExpireContrato = 
-      await mail.sendMail({
-        to: `${user.name} <${user.email}>`,
-        subject: 'Alerta de Contrato(s) Expirado(s)',
-        template: 'expired_contract',
-        context: {
-          user: user.name,
-          contrato: contrato._id,
-          dataFim: contrato.dateFim,
-        },
+    Contrato.find( 
+      { dataFim: { 
+          $gte: new Date(new Date('2024-01-01')), 
+          $lte: new Date(new Date('2030-12-31')) } 
+    }).then(async contratos => {
+      let errInfoMail;
+      await contratos.forEach(async contrato => {
+        // console.log(contrato);
+        const user = { name: 'Eric Clapton', email: 'eric.clapton@mybusiness.com' };
+        
+        errInfoMail = await mail.sendMail({
+            to: `${user.name} <${user.email}>`,
+            subject: 'Alerta de Contrato(s) Expirado(s)',
+            template: 'expired_contract',
+            context: {
+              //user: user.name,
+              _id: contrato._id,
+              objeto: contrato.objeto,
+              parceiro: contrato.parceiro,
+              cnpj: maskCnpjOrCpf(contrato.cnpj),
+              natureza: contrato.natureza,
+              deptoResponsavel: contrato.deptoResponsavel,
+              dataInicio: moment(contrato.dataInicio).format('DD/MM/YYYY'),
+              dataFim: moment(contrato.dataFim).format('DD/MM/YYYY'),
+              status: contrato.status
+            }
+        }).catch(err => { 
+          console.log(`Contrato: ${contrato.id}, não foi possivel enviar email para contrato vencido`);
+          console.log(`Erro: ${err.message}`);
+          return {Contrato: { errors: err.message }};
+        });
+        res.json(errInfoMail);
       });
-
-    res.json(_alertExpireContrato)
+      
+    }).catch(err => { return err });  
   }
   catch(err){
     return res.status(400).send({ errors: err.message});
@@ -103,6 +142,40 @@ router.get(
       return res.status(400).send({ errors: err.message})
     }
 });
+
+/**
+ * Altera campos de dados do tipo String para Date
+ * // TODO: Pode ser apagado quando forem feitas todas as
+ * // conversoes no banco PRD.
+ */
+router.post('/filds_change_string_to_date',
+auth.required, 
+routePermission.check([ [permissionModule.ROOT.insert] ]), 
+async(req, res) => {
+  // const today = moment().startOf('day');
+  // const aYear = moment(today).endOf('year');
+
+  /** Converte campos StringDate para ISODate */
+  await Contrato.find()
+  .then(contratos => {
+    contratos.forEach(async contrato => {
+      if(contrato.dataInicio !== null)
+        contrato.dataInicio = new Date(new Date(contrato.dataInicio).setMilliseconds(1));
+      if(contrato.dataFim !== null)
+        contrato.dataFim = new Date(new Date(contrato.dataFim).setMilliseconds(1));
+        
+      contrato.documentoList.forEach(documento => {
+        if (documento.dataInsert !== null)
+          documento.dataInsert = new Date(documento.dataInsert).setMilliseconds(1);
+      })
+      
+      //console.log(contrato);
+      await contrato.save(contrato); 
+    }); 
+  })
+  .then( (result => res.json(result) ))
+  .catch(err => {return console.log(err)})
+})
 
 /**
  * Insere documento em Contratos

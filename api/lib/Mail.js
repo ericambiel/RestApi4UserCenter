@@ -11,6 +11,11 @@ class Mail {
     //const { host, port, secure, auth } = mailConfig;
 
     this.transporter = nodemailer.createTransport({
+      pool: true, // send large number of messages
+      maxConnections: 1, // Simultaneous connections to SMTP server. Default: 5
+      maxMessages: 1, // Limit messages per connections. Default: 100
+      //rateDelta: 1000,
+      //rateLimit: 1000,
       host: process.env.MAIL_HOST,
       port: 465,
       secure: process.env.MAIL_SECURE === 'true' ? true : false, // true for 465, false for other ports
@@ -47,7 +52,7 @@ class Mail {
    * Envia email
    * @param message Objeto contendo dados para envio de email.
    */
-  sendMail(config) {
+   sendMail(config) {
     let message = { ...config }
     message.context.companyName = process.env.COMPANY_NAME;
     message.context.companyLogo = process.env.COMPANY_LOGO;
