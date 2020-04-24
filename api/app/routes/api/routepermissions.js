@@ -9,7 +9,10 @@ const Permission = require('../../schemas/permission')
 /** 
  * Listar as permissões de módulos. 
  */ 
-router.get('/', auth.required, routePermission.check(permissionModule.ROOT.select), (req, res) => {
+router.get('/', 
+           auth.required, 
+           routePermission.check([ [permissionModule.ROOT.select], [permissionModule.ROOT.select] ]), 
+           (req, res) => {
     Permission.find()
     .then(result => res.json(result))
     .catch(error => res.send(error))
@@ -26,6 +29,17 @@ router.get('/', auth.required, routePermission.check(permissionModule.ROOT.selec
       .catch(error => res.send(error));
   });
   
+  /** 
+   * Deletar uma permissão.
+   */ 
+  router.delete('/:id', auth.required, routePermission.check(permissionModule.ROOT.delete), (req, res) => {
+    const { id } = req.params;
+  
+    Permission.findByIdAndDelete( id )
+      .then(result => res.json(result)) // Envia Resultados das mudanças
+      .catch(error => res.send(error)); // Caso contrario envia mensagem de erro 
+  });
+
   /**
    * Atualiza dPermissões.
    * Pode ser enviado somente objeto com valor a ser atualizado.
@@ -41,15 +55,4 @@ router.get('/', auth.required, routePermission.check(permissionModule.ROOT.selec
         .catch(error => res.send(error));
   });
   
-  /** 
-   * Deletar uma permissão.
-   */ 
-  router.delete('/:id', auth.required, routePermission.check(permissionModule.ROOT.delete), (req, res) => {
-    const { id } = req.params;
-  
-    Permission.findByIdAndDelete( id )
-      .then(result => res.json(result)) // Envia Resultados das mudanças
-      .catch(error => res.send(error)); // Caso contrario envia mensagem de erro 
-  });
-
 module.exports = router;

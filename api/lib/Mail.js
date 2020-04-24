@@ -11,15 +11,15 @@ class Mail {
     //const { host, port, secure, auth } = mailConfig;
 
     this.transporter = nodemailer.createTransport({
-      pool: true, // send large number of messages
-      maxConnections: 1, // Simultaneous connections to SMTP server. Default: 5
-      maxMessages: 1, // Limit messages per connections. Default: 100
+      // pool: true, // send large number of messages
+      // maxConnections: 1, // Simultaneous connections to SMTP server. Default: 5
+      // maxMessages: 1, // Limit messages per connections. Default: 100
       //rateDelta: 1000,
       //rateLimit: 1000,
       host: process.env.MAIL_HOST,
-      port: 465,
+      port: process.env.MAIL_PORT,
       secure: process.env.MAIL_SECURE === 'true' ? true : false, // true for 465, false for other ports
-      tls:{ requireTLS : true }, // Tentara encriptar o email, caso contrario não enviara
+      // tls:{ requireTLS : true }, // Tentara encriptar o email, caso contrario não enviara
       // logger: true, // Logar na tela dados do nodemailer
       auth: {
         user: process.env.MAIL_USER,

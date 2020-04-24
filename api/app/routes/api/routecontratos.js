@@ -60,49 +60,79 @@ function maskCnpjOrCpf(cnpjOrCpf){
   return maskedValue;
 }
 
+function sendMailexpiredContract(contrato) {
+  const user = { name: 'Eric Clapton', email: 'eric.clapton@mybusiness.com' };
+  return mail.sendMail({
+    to: `${user.name} <${user.email}>`,
+    subject: 'Alerta de Contrato(s) Expirado(s)',
+    template: 'expired_contract',
+    context: {
+      //user: user.name,
+      _id: contrato._id,
+      objeto: contrato.objeto,
+      parceiro: contrato.parceiro,
+      cnpj: maskCnpjOrCpf(contrato.cnpj),
+      natureza: contrato.natureza,
+      deptoResponsavel: contrato.deptoResponsavel,
+      dataInicio: moment(contrato.dataInicio).format('DD/MM/YYYY'),
+      dataFim: moment(contrato.dataFim).format('DD/MM/YYYY'),
+      status: contrato.status
+    }
+  }).catch(err => { 
+    // console.log(`Contrato: ${contrato.id}, não foi possível enviar email para contrato vencido`);
+    // console.log(`Erro: ${err.message}`);
+    throw err
+  });
+}
+
 router.get('/expirados',
 auth.required, 
 routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROOT.select] ]), 
-(req, res) => {
+async(req, res, next) => {
   try{
-    Contrato.find( 
-      { dataFim: { 
-          $gte: new Date(new Date('2024-01-01')), 
-          $lte: new Date(new Date('2030-12-31')) } 
-    }).then(async contratos => {
-      let errInfoMail;
-      await contratos.forEach(async contrato => {
-        // console.log(contrato);
-        const user = { name: 'Eric Clapton', email: 'eric.clapton@mybusiness.com' };
-        
-        errInfoMail = await mail.sendMail({
-            to: `${user.name} <${user.email}>`,
-            subject: 'Alerta de Contrato(s) Expirado(s)',
-            template: 'expired_contract',
-            context: {
-              //user: user.name,
-              _id: contrato._id,
-              objeto: contrato.objeto,
-              parceiro: contrato.parceiro,
-              cnpj: maskCnpjOrCpf(contrato.cnpj),
-              natureza: contrato.natureza,
-              deptoResponsavel: contrato.deptoResponsavel,
-              dataInicio: moment(contrato.dataInicio).format('DD/MM/YYYY'),
-              dataFim: moment(contrato.dataFim).format('DD/MM/YYYY'),
-              status: contrato.status
-            }
-        }).catch(err => { 
-          console.log(`Contrato: ${contrato.id}, não foi possivel enviar email para contrato vencido`);
-          console.log(`Erro: ${err.message}`);
-          return {Contrato: { errors: err.message }};
-        });
-        res.json(errInfoMail);
-      });
-      
-    }).catch(err => { return err });  
+    await Contrato.find( 
+      {
+        $and:[ // Encontre valores para campos "dataFim" E "status"
+          { dataFim: { 
+            //    $gte: new Date('2020-04-24'), 
+                $lte: Date.now() // Para datas que estão abaixo de
+             }
+          },
+          //{ 'options.receiveEmailAlerts': { $ne: false } },  // que NÂO possua O valor
+          { status: { $nin: ['Expirado', 'Encerrado'] } }, // que NÃO possuam OS valoreS
+        ]
+      }
+    )
+    //.select( ['status','options.receiveEmailAlerts','dataFim','idSecondary'] ) // Trás somente campo status/id
+    .sort({dataFim: 'asc'}) // Ordem ascendente
+    // Muda Status dos contratos para "Expirado"
+    .then(contratos => {
+      contratos.forEach(async contrato => {
+        contrato.status = 'Expirado';
+        // await contrato.save();
+      })
+      return contratos;
+    })
+    // Envia emails para gestor da controladoria
+    .then(async contratos => {
+      await Promise.all(contratos.map(async contrato => {
+        if ( contrato.options === undefined || 
+              contrato.options.receiveEmailAlerts !== false ){    
+          return await sendMailexpiredContract(contrato)
+          .then(infoMail => {
+            console.log(infoMail)      
+            // console.log(contrato);
+            // return infoMail;
+            // Gravar aqui os contratos que deram certo
+            
+          })
+          .catch(err => { throw err });
+        }
+      }));
+    }).catch(err => { throw err });  
   }
   catch(err){
-    return res.status(400).send({ errors: err.message});
+    next(err);
   }
 })
 
@@ -129,7 +159,8 @@ router.get(
         // find trás contratos para os responsáveis que estão em Depto. Participantes OU Responsáveis para qualquer contrato.7
         Contrato.find(
             { $or:[ 
-              {'deptoPartList.departamento': _imResponsibleFor}, {'deptoResponsavel': _imResponsibleFor} 
+              {'deptoPartList.departamento': _imResponsibleFor}, 
+              {'deptoResponsavel': _imResponsibleFor} 
             ]} 
           )
           .then(result => res.json(result))
@@ -207,7 +238,8 @@ router.patch(
     Contrato.findByIdAndUpdate( 
       id, // Id a ser modificado
       items, // Novos valores para serem atualizados, caso ele não encontre algum objeto iro somente utilizar os encontrados 
-      {new: true }) // Diz para o Mongo trazer as informações do documento já atualizadas ao invés de um pré visualização
+      {//setDefaultsOnInsert: true, // Verifica "defaults" em Schema caso haja alteração.
+       new: true }) // Diz para o Mongo trazer as informações do documento já atualizadas ao invés de um pré visualização
         .then(result => res.json(result))
         .catch(error => res.send(error));
 });

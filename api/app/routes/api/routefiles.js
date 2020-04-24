@@ -34,7 +34,10 @@ function renameFile(dirFile, fileName ,newFileName) {
 }
 
 /** Baixa arquivo */
-router.get('/contrato/:file', auth.required, routePermission.check(permissionModule.CONTRATO.select), (req, res) =>{
+router.get('/contrato/:file', 
+           auth.required, 
+           routePermission.check(permissionModule.FILE.select), 
+           (req, res) =>{
   const { file } = req.params;
 
   // res.sendFile( file, { root: dirFile }); //TODO: Tratar mensagem de erro caso arquivo não seja encontrado
@@ -42,7 +45,11 @@ router.get('/contrato/:file', auth.required, routePermission.check(permissionMod
 });
 
 /** Insere arquivo */
-router.post('/contrato',auth.required, routePermission.check(permissionModule.CONTRATO.insert), multipartMiddleware, (req, res) => {
+// TODO: Os arquivos com mesmo nome são sobrescritos mas add ao banco verificar
+router.post('/contrato',
+            auth.required, 
+            routePermission.check(permissionModule.FILE.insert), 
+            multipartMiddleware, (req, res) => {
   const files = req.files;
   //console.log(`Armazenando arquivo: ${file}`);
 

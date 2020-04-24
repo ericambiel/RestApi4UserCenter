@@ -2,7 +2,12 @@ const mongoose = require('mongoose'); // Associa o mesmo objeto instanciado "mon
 const Schema = mongoose.Schema;
 
 // const Departamento = require('./departamento'); 
-// const Documento = require('./documento');
+const Documento = require('./documento');
+
+const OptionsSchema = new Schema({
+    receiveEmailAlerts: { type: Boolean, default: true },
+    sentEmail: { type: Boolean, default: false }
+},{ timestamps: true, _id : false });
 
 const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     objeto: { type: String, required: [true, 'Não pode estar em branco'] },
@@ -16,25 +21,16 @@ const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     valMensal: { type: Number },
     dataInicio: { type: Date },
     dataFim: { type: Date },
-    deptoPartList: { type : [ {departamento: { type: String } } ], default: [] }, // TODO: Criar referências entre modelo departamento. 
+    deptoPartList: { type : [ {departamento: { type: String } } ] }, // TODO: Criar referências entre modelo departamento. 
     indReajuste: { type: String },
     diaAntecedencia: { type: Number },  // Dias de antecedencia
     obs: { type: String },
     historico: { type: String },
     anaJuridico: { type: Boolean },     // Analise juridica
-    //documentoList: { type : Documento, default: [] },
-    documentoList: { type : [ {
-                                nome: { type: String },
-                                descricao: { type: String },
-                                diretorio: { type: String , default: process.env.UPLOAD_DIR_CONTARTOS },
-                                tipo: { type: String },
-                                numAditivo: { type: Number }, // Sequência logica do documento
-                                dataInsert: { type: Date },
-                            } ], 
-                            default: [] 
-                    }, 
-    natureza: { type: String } 
-}, {collection: 'Contratos'});
+    documentoList:  [ Documento.schema ], 
+    natureza: { type: String },
+    options: { type: OptionsSchema, default: OptionsSchema}
+}, { timestamps: true, collection: 'Contratos' });
 
 // Objeto sem segmentação por classes
 // # A sample schema, like what we'd get from json.load()

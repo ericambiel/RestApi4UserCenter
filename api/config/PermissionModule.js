@@ -13,6 +13,7 @@ class PermissionModule {
     USER = {select:"user:select", insert:"user:insert", delete:"user:delete", update:"user:update"};
     DEPARTMENT = {select:"department:select", insert:"department:insert", delete:"department:delete", update:"department:update"};
     RH = {select:"rh:select", insert:"rh:insert", delete:"rh:delete", update:"rh:update"};
+    FILE = {select:"file:select", insert:"file:insert", delete:"file:delete", update:"file:update"};
     
     ROOT = {select:"root:select", insert:"root:insert", delete:"root:delete", update:"root:update"};
 }

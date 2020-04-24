@@ -105,6 +105,6 @@ dist
 .tern-port
 
 api/tools/JSON/*.json
-api/public/files
+public/files
 api/restapi4usercenter.*
 .history
