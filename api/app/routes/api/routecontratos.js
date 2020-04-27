@@ -9,6 +9,7 @@ const Contrato = require('../../schemas/contrato');
 
 const moment = require('moment');
 const imask = require('imask');
+const Cron = require('../../../lib/Cron');
 
 // /** 
 //  * Listar todos documentos de Contratos 
@@ -60,7 +61,7 @@ function maskCnpjOrCpf(cnpjOrCpf){
   return maskedValue;
 }
 
-function sendMailexpiredContract(contrato) {
+function sendMailExpiredContract(contrato) {
   const user = { name: 'Eric Clapton', email: 'eric.clapton@mybusiness.com' };
   return mail.sendMail({
     to: `${user.name} <${user.email}>`,
@@ -79,11 +80,74 @@ function sendMailexpiredContract(contrato) {
       status: contrato.status
     }
   }).catch(err => { 
-    // console.log(`Contrato: ${contrato.id}, não foi possível enviar email para contrato vencido`);
+    console.log(`[CONTRATOS]: Erro ao enviar E-Mail de contrato vencido: _id:${contrato.id}`);
     // console.log(`Erro: ${err.message}`);
     throw err
   });
 }
+
+// async function expiredContracts() {
+//   try{
+//     await Contrato.find( 
+//       { $or: [
+//         { // Encontre os valores da primeira ou segunda query
+//           $and:[ // Encontre valores para campos "dataFim" E "status"
+//             { dataFim: {
+//                 // $gte: new Date('2029-01-01'), // Para datas que estão acima de
+//                 $lte: Date.now() // Para datas que estão abaixo de
+//               }
+//             },
+//             { 'options.sendEmailAlerts': { $ne: false } },  // que NÂO possua O valor. Para caso não exista o objeto no documento
+//             { status: { $nin: ['Expirado', 'Encerrado'] } }, // que NÃO possuam OS valoreS. Para caso não exista o objeto no documento
+//           ]
+//         },
+//         { 
+//           // Contratos que o ultimo item da lista contrato.logEmail estejam com expiredEmailSent = false
+//           $expr: {$eq: [{$arrayElemAt: ['$logEmail.expiredEmailSent', -1]}, false]}
+//         }
+//       ]}
+//     )
+//     // .select( ['status','options.sendEmailAlerts','dataFim','idSecondary'] ) // Trás somente campo status/id
+//     // .slice( 'logEmail', -1) // Retorna ultimo item da lista
+//     .sort({dataFim: 'asc'}) // Ordem ascendente
+//     /* Muda Status dos contratos para "Expirado" */
+//     .then(async contratos => {
+//       await Promise.all(contratos.map(async contrato => {
+//         contrato.status = 'Expirado';
+//         await contrato.save().catch(err => { throw err });
+//       }));
+//       return contratos;
+//     })
+//     /* Envia emails para gestor da controladoria */
+//     .then(async contratos => {
+//       await Promise.all(contratos.map(async contrato => {
+//         if ( contrato.options === undefined || 
+//               contrato.options.sendEmailAlerts !== false ){    
+//           return await sendMailExpiredContract(contrato)
+//           /* Registra contratos enviados. */
+//           .then(async infoMail => {
+//             await contrato.updateOne(
+//               { $push: 
+//                 { logEmail: { expiredEmailSent : true, message: JSON.stringify(infoMail) } } 
+//               }).catch(err => { throw err });
+//             return infoMail; // Retorna contrato atualizado.
+//            })
+//            /* registra contratos não enviados */
+//           .catch(async err => {
+//             await contrato.updateOne(
+//               { $push: 
+//                 { logEmail: {expiredEmailSent : false, message: err.message.toString()} } 
+//               }).catch(err => { throw err });
+//             throw err; 
+//           });
+//         }
+//       })).then(mailInfo => res.json(mailInfo));
+//     }).catch(err => { throw err });  
+//   }
+//   catch(err){
+//     return(err);
+//   }
+// }
 
 router.get('/expirados',
 auth.required, 
@@ -91,44 +155,59 @@ routePermission.check([ [permissionModule.CONTRATO.select],[permissionModule.ROO
 async(req, res, next) => {
   try{
     await Contrato.find( 
-      {
-        $and:[ // Encontre valores para campos "dataFim" E "status"
-          { dataFim: { 
-            //    $gte: new Date('2020-04-24'), 
+      { $or: [
+        { // Encontre os valores da primeira ou segunda query
+          $and:[ // Encontre valores para campos "dataFim" E "status"
+            { dataFim: {
+                // $gte: new Date('2029-01-01'), // Para datas que estão acima de
                 $lte: Date.now() // Para datas que estão abaixo de
-             }
-          },
-          //{ 'options.receiveEmailAlerts': { $ne: false } },  // que NÂO possua O valor
-          { status: { $nin: ['Expirado', 'Encerrado'] } }, // que NÃO possuam OS valoreS
-        ]
-      }
+              }
+            },
+            { 'options.sendEmailAlerts': { $ne: false } },  // que NÂO possua O valor. Para caso não exista o objeto no documento
+            { status: { $nin: ['Expirado', 'Encerrado'] } }, // que NÃO possuam OS valoreS. Para caso não exista o objeto no documento
+          ]
+        },
+        { 
+          // Contratos que o ultimo item da lista contrato.logEmail estejam com expiredEmailSent = false
+          $expr: {$eq: [{$arrayElemAt: ['$logEmail.expiredEmailSent', -1]}, false]}
+        }
+      ]}
     )
-    //.select( ['status','options.receiveEmailAlerts','dataFim','idSecondary'] ) // Trás somente campo status/id
+    // .select( ['status','options.sendEmailAlerts','dataFim','idSecondary'] ) // Trás somente campo status/id
+    // .slice( 'logEmail', -1) // Retorna ultimo item da lista
     .sort({dataFim: 'asc'}) // Ordem ascendente
-    // Muda Status dos contratos para "Expirado"
-    .then(contratos => {
-      contratos.forEach(async contrato => {
+    /* Muda Status dos contratos para "Expirado" */
+    .then(async contratos => {
+      await Promise.all(contratos.map(async contrato => {
         contrato.status = 'Expirado';
-        // await contrato.save();
-      })
+        await contrato.save().catch(err => { throw err });
+      }));
       return contratos;
     })
-    // Envia emails para gestor da controladoria
+    /* Envia emails para gestor da controladoria */
     .then(async contratos => {
       await Promise.all(contratos.map(async contrato => {
         if ( contrato.options === undefined || 
-              contrato.options.receiveEmailAlerts !== false ){    
-          return await sendMailexpiredContract(contrato)
-          .then(infoMail => {
-            console.log(infoMail)      
-            // console.log(contrato);
-            // return infoMail;
-            // Gravar aqui os contratos que deram certo
-            
-          })
-          .catch(err => { throw err });
+              contrato.options.sendEmailAlerts !== false ){    
+          return await sendMailExpiredContract(contrato)
+          /* Registra contratos enviados. */
+          .then(async infoMail => {
+            await contrato.updateOne(
+              { $push: 
+                { logEmail: { expiredEmailSent : true, message: JSON.stringify(infoMail) } } 
+              }).catch(err => { throw err });
+            return infoMail; // Retorna contrato atualizado.
+           })
+           /* registra contratos não enviados */
+          .catch(async err => {
+            await contrato.updateOne(
+              { $push: 
+                { logEmail: {expiredEmailSent : false, message: err.message.toString()} } 
+              }).catch(err => { throw err });
+            throw err; 
+          });
         }
-      }));
+      })).then(mailInfo => res.json(mailInfo));
     }).catch(err => { throw err });  
   }
   catch(err){
@@ -182,30 +261,31 @@ router.get(
 router.post('/filds_change_string_to_date',
 auth.required, 
 routePermission.check([ [permissionModule.ROOT.insert] ]), 
-async(req, res) => {
+async(req, res, next) => {
   // const today = moment().startOf('day');
   // const aYear = moment(today).endOf('year');
-
-  /** Converte campos StringDate para ISODate */
-  await Contrato.find()
-  .then(contratos => {
-    contratos.forEach(async contrato => {
-      if(contrato.dataInicio !== null)
-        contrato.dataInicio = new Date(new Date(contrato.dataInicio).setMilliseconds(1));
-      if(contrato.dataFim !== null)
-        contrato.dataFim = new Date(new Date(contrato.dataFim).setMilliseconds(1));
-        
-      contrato.documentoList.forEach(documento => {
-        if (documento.dataInsert !== null)
-          documento.dataInsert = new Date(documento.dataInsert).setMilliseconds(1);
-      })
-      
-      //console.log(contrato);
-      await contrato.save(contrato); 
-    }); 
-  })
-  .then( (result => res.json(result) ))
-  .catch(err => {return console.log(err)})
+  try{
+    /** Converte campos StringDate para ISODate */
+    await Contrato.find()
+    .then(async contratos => {
+      return await Promise.all(
+        contratos.map(async contrato => {
+          if(contrato.dataInicio !== null)
+            contrato.dataInicio = new Date(contrato.dataInicio).setMilliseconds(1);
+          if(contrato.dataFim !== null)
+            contrato.dataFim = new Date(contrato.dataFim).setMilliseconds(1);
+            
+          contrato.documentoList.forEach(documento => {
+            if (documento.dataInsert !== null)
+              documento.dataInsert = new Date(documento.dataInsert).setMilliseconds(1);
+          })
+          return await contrato.save(contrato).catch(err => {throw err}); 
+        })
+      );
+    })
+    .then( (result => res.json(result) ))
+    .catch(err => {throw err})
+  }catch(err) { next(err); }
 })
 
 /**

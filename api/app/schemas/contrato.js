@@ -4,12 +4,24 @@ const Schema = mongoose.Schema;
 // const Departamento = require('./departamento'); 
 const Documento = require('./documento');
 
+/**
+ * Contracts options
+ */
 const OptionsSchema = new Schema({
-    receiveEmailAlerts: { type: Boolean, default: true },
-    sentEmail: { type: Boolean, default: false }
-},{ timestamps: true, _id : false });
+    sendEmailAlerts: { type: Boolean, default: true },
+},{ _id : false });
 
-const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
+/**
+ * Record of emails sent.
+ */
+const LogEmailSchema = new Schema({
+    expiredEmailSent: { type: Boolean }, // Contrato vencido enviado
+    expiringEmailSent: { type: Boolean }, // Contrato pra vencer
+    indefiniteEmailSent: { type: Boolean }, // Contrato indeterminado
+    message: {type: String}
+},{ timestamps: { updatedAt: false } , _id : false });
+
+const ContratoSchema = new Schema({
     objeto: { type: String, required: [true, 'Não pode estar em branco'] },
     estabFiscal: { type: String},
     parceiro: { type: String, required: [true, 'Não pode estar em branco'] },
@@ -29,7 +41,8 @@ const ContratoSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     anaJuridico: { type: Boolean },     // Analise juridica
     documentoList:  [ Documento.schema ], 
     natureza: { type: String },
-    options: { type: OptionsSchema, default: OptionsSchema}
+    options: { type: OptionsSchema, default: OptionsSchema },
+    logEmail: [ LogEmailSchema ]
 }, { timestamps: true, collection: 'Contratos' });
 
 // Objeto sem segmentação por classes
