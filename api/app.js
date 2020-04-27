@@ -11,7 +11,6 @@ require('dotenv-safe').config();
 require('./lib/passport'); // Verificar se usuário é valido/BD
 //const cors = require('cors'); //Habilitar caso esteja em DEV
 
-
 // Variáveis das Rotas, add logo abaixo em use.nomeRouter
 var indexRouter = require('./app/routes/index');
 // var usersRouter = require('./app/routes/routeusers');

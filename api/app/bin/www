@@ -87,3 +87,8 @@ function onListening() {
     : 'porta ' + addr.port;
   debug('Escultando em: ' + bind);
 }
+
+/**
+ * Initiate CRON
+ */
+require('../../jobs/Cron');
