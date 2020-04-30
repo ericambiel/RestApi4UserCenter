@@ -36,6 +36,7 @@ const ContratoSchema = new Schema({
     deptoPartList: { type : [ {departamento: { type: String } } ] }, // TODO: Criar referências entre modelo departamento. 
     indReajuste: { type: String },
     diaAntecedencia: { type: Number },  // Dias de antecedencia
+    dataAntencedencia: { type: Date },
     obs: { type: String },
     historico: { type: String },
     anaJuridico: { type: Boolean },     // Analise juridica
@@ -44,6 +45,25 @@ const ContratoSchema = new Schema({
     options: { type: OptionsSchema, default: OptionsSchema },
     logEmail: [ LogEmailSchema ]
 }, { timestamps: true, collection: 'Contratos' });
+
+// findByIdAndUpdate,findOne,findOneAndDelete, findOneAndRemove, findOneAndUpdate, update, updateOne,updateMany
+// ContratoSchema.post(['findOneAndUpdate'], function() {
+//     try{
+//         console.log('Trigger - findOneAndUpdate');
+//         if ( this._update.$set.diaAntecedencia !== undefined &&
+//             this._update.$set.diaAntecedencia > 0 ){
+//                 let date = new Date();
+//                 date = new Date(date.setDate(date.getDate() + this._update.$set.diaAntecedencia ));
+//                 return this
+//                     .updateOne({ $set: { dataAntencedencia: date }})
+//                     //.catch(err => {throw err});
+//             } else {
+//                 return this
+//                     .updateOne({ $unset: {dataAntencedencia: ''} })
+//                     .catch(err => {throw err});
+//             }
+//     }catch(err){ console.log(err); }
+// });
 
 // Objeto sem segmentação por classes
 // # A sample schema, like what we'd get from json.load()

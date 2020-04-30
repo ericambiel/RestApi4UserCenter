@@ -64,7 +64,7 @@ router.get(
  * // conversoes no banco PRD.
  */
 router.post(
-  '/filds_change_string_to_date',
+  '/fields_to_convert_string_to_date',
   auth.required, 
   routePermission.check([ [permissionModule.ROOT.insert] ]), 
   async(req, res, next) => {
@@ -111,21 +111,30 @@ router.post(
 
 // TODO:FIX: Após criação de controller não trás mais itens enviados.
 /** Envia email para Contratos expirados */
-router.patch(
+router.post(
   '/expirados',
   auth.required, 
-  routePermission.check([ [permissionModule.ROOT.update] ]), 
+  routePermission.check([ [permissionModule.ROOT.update], [permissionModule.ROOT.insert] ]), 
   async(req, res, next) => {
     try{ res.json(await controller.expiredContracts()); }
     catch(err){ next(err); }
 })
 
-router.patch(
+router.post(
   '/expirando',
   auth.required, 
-  routePermission.check([ [permissionModule.ROOT.update] ]), 
+  routePermission.check([ [permissionModule.ROOT.update], [permissionModule.ROOT.insert] ]), 
   async(req, res, next) => {
     try{ res.json(await controller.expiringContracts()); }
+    catch(err){ next(err); }
+})
+
+router.post(
+  '/indefinidos',
+  auth.required, 
+  routePermission.check([ [permissionModule.ROOT.update], [permissionModule.ROOT.insert] ]), 
+  async(req, res, next) => {
+    try{ res.json(await controller.indefiniteContracts()); }
     catch(err){ next(err); }
 })
 
@@ -144,7 +153,7 @@ router.patch(
     Contrato.findByIdAndUpdate( 
       id, // Id a ser modificado
       items, // Novos valores para serem atualizados, caso ele não encontre algum objeto iro somente utilizar os encontrados 
-      {//setDefaultsOnInsert: true, // Verifica "defaults" em Schema caso haja alteração.
+      {// upsert: true, setDefaultsOnInsert: true, // Verifica "defaults" em Schema caso haja alteração.
        new: true }) // Diz para o Mongo trazer as informações do documento já atualizadas ao invés de um pré visualização
         .then(result => res.json(result))
         .catch(error => res.send(error));
