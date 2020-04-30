@@ -11,9 +11,9 @@ class Mail {
     //const { host, port, secure, auth } = mailConfig;
 
     this.transporter = nodemailer.createTransport({
-      // pool: true, // send large number of messages
-      // maxConnections: 1, // Simultaneous connections to SMTP server. Default: 5
-      // maxMessages: 1, // Limit messages per connections. Default: 100
+      pool: true, // send large number of messages, don't forgot to close connection after sending all emails 
+      maxConnections: 1, // Simultaneous connections to SMTP server. Default: 5
+      maxMessages: 1, // Limit messages per connections. Default: 100
       //rateDelta: 1000,
       //rateLimit: 1000,
       host: process.env.MAIL_HOST,
@@ -75,4 +75,4 @@ class Mail {
     }); 
   }
 }
-module.exports = new Mail();
+module.exports = Mail;

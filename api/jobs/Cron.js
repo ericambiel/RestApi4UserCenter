@@ -8,18 +8,24 @@ console.log("Automação de tarefas iniciada");
 console.log("Tarefas agendadas: Envio de E-Mails a cada hora do dia")
 // new CronJob('0 1-23 * * *', async () => { // A cada hora
 //     try{
-//         // console.log(Date.now());
 //         contractControler.expiredContracts();
 //         contractControler.expiringContracts();
-//         contractControler.indefiniteContracts();
+//         contractControler.indeterminateContracts();
 //     }catch(err){ console.log(err); }
 // }).start();
 
-// new CronJob('1 * * * * *', async () => { // A cada hora
+new CronJob('* * * * *', async () => { // A cada Minuto
+    try{
+        contractControler.expiredContracts();
+        contractControler.expiringContracts();
+        contractControler.indeterminateContracts();
+    }catch(err){ console.log(err); }
+}).start();
+
+// new CronJob('* * * * * *', async () => { // A cada segundo
 //     try{
-//         // console.log(Date.now());
-//         contractControler.expiredContracts();
-//         contractControler.expiringContracts();
-//         contractControler.indefiniteContracts();
+//         // contractControler.expiredContracts();
+//         // contractControler.expiringContracts();
+//         // contractControler.indeterminateContracts();
 //     }catch(err){ console.log(err); }
 // }).start();

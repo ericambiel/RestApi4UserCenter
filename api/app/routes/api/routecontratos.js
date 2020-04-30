@@ -130,11 +130,11 @@ router.post(
 })
 
 router.post(
-  '/indefinidos',
+  '/indeterminados',
   auth.required, 
   routePermission.check([ [permissionModule.ROOT.update], [permissionModule.ROOT.insert] ]), 
   async(req, res, next) => {
-    try{ res.json(await controller.indefiniteContracts()); }
+    try{ res.json(await controller.indeterminateContracts()); }
     catch(err){ next(err); }
 })
 

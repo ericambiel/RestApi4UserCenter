@@ -17,7 +17,7 @@ const OptionsSchema = new Schema({
 const LogEmailSchema = new Schema({
     expiredEmailSent: { type: Boolean }, // Contrato vencido enviado
     expiringEmailSent: { type: Boolean }, // Contrato pra vencer
-    indefiniteEmailSent: { type: Boolean }, // Contrato indeterminado
+    indeterminateEmailSent: { type: Boolean }, // Contrato indeterminado
     message: {type: String}
 },{ timestamps: { updatedAt: false } , _id : false });
 

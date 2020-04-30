@@ -1,7 +1,9 @@
-const now = `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+let now;
 
 class ConsoleLog {
-   constructor() {}
+   constructor() {
+     now = `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+   }
  
    /**
     * Imprime no console mensagens de erro
@@ -13,8 +15,8 @@ class ConsoleLog {
    printConsole(message){
      if (message.indexOf('[INFO]') === '[INFO]') console.info(`${now} [INFO] ${message}`);
      else if(message.indexOf('[ERROR]') === '[ERROR]') console.info(`${now} [ERROR] ${message}`);
-     else (console.log(`${now}: ${message}`));
+     else (console.log(`${now} ${message}`));
    }
 }
 
-module.exports = new ConsoleLog();
+module.exports = ConsoleLog;
