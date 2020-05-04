@@ -1,4 +1,4 @@
-require('./User'); // Necessário para referencias
+require('./user'); // Necessário para referencias
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é dado é no banco

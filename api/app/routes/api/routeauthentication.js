@@ -1,11 +1,11 @@
 var router = require('express').Router();
 const passport = require('passport');
 
-// var auth = require('../../common/auth');
-// const routePermission = require('../../common/PermissionRoutes');
-// const permissionModule = require('../../common/PermissionModule');
+// var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
+// const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
+// const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
-// const User = require('../../models/User');
+// const User = require('../../schemas/user');
 
 
 /** Faz login do usuário no sistema */

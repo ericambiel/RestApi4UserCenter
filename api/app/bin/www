@@ -6,7 +6,7 @@
 
 require('dotenv-safe').config();
 
-var app = require('../app');
+var app = require('../../app');
 var debug = require('debug')('api:server');
 var http = require('http');
 
@@ -87,3 +87,8 @@ function onListening() {
     : 'porta ' + addr.port;
   debug('Escultando em: ' + bind);
 }
+
+/**
+ * Initiate CRON
+ */
+require('../../jobs/Cron');

@@ -8,15 +8,14 @@ const mongoose = require('mongoose');
 
 require('dotenv-safe').config();
 
-require('./common/passport'); // Verificar se usuário é valido/BD
+require('./lib/passport'); // Verificar se usuário é valido/BD
 //const cors = require('cors'); //Habilitar caso esteja em DEV
 
-
 // Variáveis das Rotas, add logo abaixo em use.nomeRouter
-var indexRouter = require('./routes/index');
-// var usersRouter = require('./routes/routeusers');
-// var contratosRouter = require('./routes/contratos');
-// var fileRouter = require('./routes/file');
+var indexRouter = require('./app/routes/index');
+// var usersRouter = require('./app/routes/routeusers');
+// var contratosRouter = require('./app/routes/contratos');
+// var fileRouter = require('./app/routes/file');
 
 var app = express();
 
@@ -28,7 +27,8 @@ const connectionString =
 mongoose.connect( connectionString, { 
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: false}) // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
+    useFindAndModify: false, // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
+    useCreateIndex: true }) // Para mais detalhes https://github.com/Automattic/mongoose/issues/6890
   .then(client => {
     console.log(`Conectado ao BD em: ${process.env.DB_HOST}:${process.env.DB_PORT}`);
     console.log(`Base de Dados: ${process.env.DB_NAME}`);

@@ -10,4 +10,4 @@ const DocumentoSchema = new mongoose.Schema({
   dataInsert: { type: Date },
 })
 
-// module.exports = mongoose.model('Documento', documentoSchema);
+module.exports = mongoose.model('Documento', DocumentoSchema, 'Documento');

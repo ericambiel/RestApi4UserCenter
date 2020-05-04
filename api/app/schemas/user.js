@@ -1,7 +1,7 @@
 require("dotenv-safe").config(); // Configurações de ambiente.
 require('./estabFiscal'); // Necessários caso use referencia ao Model
-const Departments = require('./Department');
-const Permissions = require('./Permission');
+const Departments = require('./department');
+const Permissions = require('./permission');
 const mongoose = require('mongoose') // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
 const validator = require('validator') // Classe usada para validações de dados
@@ -9,6 +9,7 @@ const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é d
 const bcrypt = require('bcrypt'); // Criptografa senha a partir de um token.
 const mongooseHidden = require('mongoose-hidden')();
 var jwt = require('jsonwebtoken'); // Gerador Token JWT. 
+const ConsoleLog = require('../../lib/ConsoleLog');
 
 const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     userName: { 
@@ -78,7 +79,7 @@ UserSchema.methods.setPassword = function(password) {
     if(typeof password !== 'undefined'){
         const saltRounds = 12; // >= 12 mais seguro, maior mais lento.
         this.hashedPass = bcrypt.hashSync(password, saltRounds, (err, result) => { // TODO: Mudar para Assíncrono.
-            console.log(`(Sistema): Hashing a senha - ${!err?'bcrypt':err} - ${Date()}`);
+            //console.log(`(Sistema): Hashing a senha - ${!err?'bcrypt':err} - ${Date()}`);
             return result;
         });
     }
@@ -87,7 +88,7 @@ UserSchema.methods.setPassword = function(password) {
 UserSchema.methods.validPassword = function(password) {
     // Síncrono
     const result = bcrypt.compareSync(password, this.hashedPass);
-    console.log(`(Login): ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'} - ${Date()}`);
+    new ConsoleLog().printConsole(`[INFO][CONTARTOS] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
     return result;
     
     // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar bloqueio da thread principal.
