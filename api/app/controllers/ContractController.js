@@ -117,19 +117,19 @@ function maskCnpjOrCpf(cnpjOrCpf) {
  * @param {Object} contrato Objeto com informações do contrato
  * @param {String} template nome do templete a ser usado no envio do email.
  */
-function sendMailContract(contrato, template) {
+function sendMailContract(contrato, identifier) {
   mail = new Mail();
   const user = {
-    name: 'Eric Clapton',
-    email: 'eric.clapton@mybusiness.com'
+    name: '',
+    email: process.env.MAIL_SEND_TO
   };
   return mail.sendMail({
       to: `${user.name} <${user.email}>`,
-      subject: 'Alerta de Contrato(s) Expirado(s)',
-      template: template,
+      subject: `Alerta de ${identifier.subject}`,
+      template: identifier.template,
       context: {
         //user: user.name,
-        _id: contrato._id,
+        id: contrato.id,
         objeto: contrato.objeto,
         parceiro: contrato.parceiro,
         cnpj: maskCnpjOrCpf(contrato.cnpj),
@@ -180,6 +180,12 @@ async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, 
       { $match: { dateToSendEmail: { $lte: new Date() } } }, // Filtra contratos que serão enviado hoje
     ]
   )
+  // Object JavaScript para Mongoose model, para gerar campos virtuais.
+  .then(contratos => {
+    return contratos.map(contrato => {
+      return new Contrato(contrato);
+    });
+  })
   // .sort({ dataInicio: 'asc' }) // Ordena tudo que foi secionado pelo primeiro match
   .catch(err => { throw err; });
 }
@@ -213,13 +219,20 @@ async function logEmail(contrato, fieldToLog, infoMail) {
  * @param {String} identifier identifica o templete a ser usado
  */
 function selectTemplate(identifier){
+  const options = { template: '', subject: '' };
   switch (identifier) {
     case 'expiringEmailSent':
-      return 'expiring_contract';
+      options.template = 'expiring_contract';
+      options.subject = 'Contrato à Vencer';
+      return options;
     case 'indeterminateEmailSent':
-      return 'indeterminate_contract';
+      options.template = 'indeterminate_contract';
+      options.subject = 'Contrato Indeterminado';
+      return options;
     case 'expiredEmailSent':
-      return 'expired_contract';
+      options.template = 'expired_contract';
+      options.subject = 'Contrato Expirado';
+      return options;
     default:
       new ConsoleLog().printConsole('[ERROR] Templete para email não encontrado');
       throw new Error('Templete para email não encontrado');

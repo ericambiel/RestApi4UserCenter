@@ -11,9 +11,9 @@ class Mail {
     //const { host, port, secure, auth } = mailConfig;
 
     this.transporter = nodemailer.createTransport({
-      pool: true, // send large number of messages, don't forgot to close connection after sending all emails 
-      maxConnections: 1, // Simultaneous connections to SMTP server. Default: 5
-      maxMessages: 1, // Limit messages per connections. Default: 100
+      pool: false, // send large number of messages, don't forgot to close connection after sending all emails 
+      maxConnections: 5, // Simultaneous connections to SMTP server. Default: 5
+      maxMessages: 10, // Limit messages per connections. Default: 100
       //rateDelta: 1000,
       //rateLimit: 1000,
       host: process.env.MAIL_HOST,
@@ -59,7 +59,7 @@ class Mail {
     message.context.companySite = process.env.COMPANY_SITE;
     
     return this.transporter.sendMail({
-      from: 'Administradores <alert@mybusiness.com>',
+      from: `${process.env.MAIL_SEND_AS_NAME} <${process.env.MAIL_SEND_AS_EMAIL}>`,
       ...message,
     });
   }

@@ -34,7 +34,8 @@ router.get(
       const auditDepartment = 'Controladoria'; // Responsável pelo depto. que pode ver todos os contratos.
       const _imResponsibleFor = controller.imResponsibleFor(req.payload);
     
-      //TODO: Quando os relacionamentos entre departamentos dos contratos e usuários forem feitos, comparar com _id do departamento.
+      // TODO: Quando os relacionamentos entre departamentos dos contratos e usuários forem feitos, comparar com _id do departamento.
+      // TODO: Passar para controller
       if( _imResponsibleFor.includes(auditDepartment) ) { // Se da Controladoria/Auditoria.
         Contrato.find()
           .then(result => res.json(result) )
@@ -60,37 +61,42 @@ router.get(
 
 /**
  * Altera campos de dados do tipo String para Date
+ * e remove campos data que estiverem nulos
  * // TODO: Pode ser apagado quando forem feitas todas as
  * // conversoes no banco PRD.
  */
 router.post(
-  '/fields_to_convert_string_to_date',
+  '/normalize_date_fields',
   auth.required, 
-  routePermission.check([ [permissionModule.ROOT.insert] ]), 
+  routePermission.check([ [permissionModule.ROOT.remove], [permissionModule.ROOT.update] ]), 
   async(req, res, next) => {
     // const today = moment().startOf('day');
     // const aYear = moment(today).endOf('year');
     try{
-      /** Converte campos StringDate para ISODate */
-      await Contrato.find()
-      .then(async contratos => {
-        return await Promise.all(
-          contratos.map(async contrato => {
-            if(contrato.dataInicio !== null)
-              contrato.dataInicio = new Date(contrato.dataInicio).setMilliseconds(1);
-            if(contrato.dataFim !== null)
-              contrato.dataFim = new Date(contrato.dataFim).setMilliseconds(1);
-              
-            contrato.documentoList.forEach(documento => {
-              if (documento.dataInsert !== null)
-                documento.dataInsert = new Date(documento.dataInsert).setMilliseconds(1);
-            })
-            return await contrato.save(contrato).catch(err => {throw err}); 
+      // Remove campos dataFim = null
+      await Contrato.updateMany( { dataFim: null }, { $unset: { dataFim:1 } } )
+        .then(async () => {
+          // Converte campos StringDate para ISODate
+          await Contrato.find()
+          .then(async contratos => {
+            return await Promise.all(
+              contratos.map(async contrato => {
+                if ( !isNaN(Date.parse(contrato.dataInicio)) ) // Se for possível converter para Date
+                  contrato.dataInicio = new Date(Date.parse(contrato.dataInicio)).setMilliseconds(1);
+                if ( !isNaN(Date.parse(contrato.dataFim)) ) 
+                  contrato.dataFim = new Date(contrato.dataFim).setMilliseconds(1);
+                contrato.documentoList.forEach(documento => {
+                    if ( !isNaN(Date.parse(documento.dataInsert)) ) 
+                      documento.dataInsert = new Date(documento.dataInsert).setMilliseconds(1);
+                })
+                return await contrato.save(contrato).catch(err => {throw err}); 
+              })
+            );
           })
-        );
-      })
-      .then( (result => res.json(result) ))
-      .catch(err => {throw err})
+          .then(contratos => res.json(contratos))
+          .catch(err => {throw err});
+        })
+        .catch(err => { throw err });
     }catch(err) { next(err); }
 })
 

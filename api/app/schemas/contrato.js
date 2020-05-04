@@ -44,7 +44,19 @@ const ContratoSchema = new Schema({
     natureza: { type: String },
     options: { type: OptionsSchema, default: OptionsSchema },
     logEmail: [ LogEmailSchema ]
-}, { timestamps: true, collection: 'Contratos' });
+}, { timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true }, collection: 'Contratos' });
+
+ContratoSchema.virtual('id').get(function() {
+    /* 
+        timestamp → 5220bb43 Generation timestamp (4 bytes)
+        machine → b754af First 3 bytes of the MD5 hash of the machine host name, or of the mac/network address, or the virtual machine id.
+        pid → 4118 First 2 bytes of the process (or thread) ID generating the ObjectId.
+        inc → 000001 ever incrementing integer value.
+    */
+    const objID = this._id;
+    const contractId = objID.toString().substr(20); // Default 18
+    return contractId
+});
 
 // findByIdAndUpdate,findOne,findOneAndDelete, findOneAndRemove, findOneAndUpdate, update, updateOne,updateMany
 // ContratoSchema.post(['findOneAndUpdate'], function() {

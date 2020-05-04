@@ -27,7 +27,8 @@ const connectionString =
 mongoose.connect( connectionString, { 
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: false}) // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
+    useFindAndModify: false, // Para mais detalhes https://mongoosejs.com/docs/deprecations.html#-findandmodify-
+    useCreateIndex: true }) // Para mais detalhes https://github.com/Automattic/mongoose/issues/6890
   .then(client => {
     console.log(`Conectado ao BD em: ${process.env.DB_HOST}:${process.env.DB_PORT}`);
     console.log(`Base de Dados: ${process.env.DB_NAME}`);
