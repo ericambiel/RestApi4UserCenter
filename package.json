@@ -62,13 +62,14 @@
     "eslint-plugin-standard": "^4.0.1",
     "nodemon": "^2.0.2"
   },
-  "bin": "./bin/www",
+  "bin": "./api/app/bin/www",
   "pkg": {
     "assets": [
-      "public/stylesheets/**/*"
+      "node_modules/**",
+      "api/views/**"
     ],
     "targets": [
-      "node12"
+      "node13"
     ]
   }
 }

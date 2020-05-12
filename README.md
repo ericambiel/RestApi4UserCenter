@@ -1,7 +1,7 @@
 # RestApi4UserCenter
 REST API que irá fornecer todos os dados necessário para o projeto UserCenter: https://github.com/ericambiel/usercenter
 
-**Andamento dos Projetos**
+**Andamento do Projeto**
 ---
 
 - [ ] **Modulo - Usuário**
@@ -12,10 +12,10 @@ REST API que irá fornecer todos os dados necessário para o projeto UserCenter:
 
 ---
 
-- [ ] **Modulo - Contratos**
+- [x] **Modulo - Contratos**
    - [x] Criação end points Inserção/Modificação/Alteração/Exclusão.
-   - [ ] Associar responsáveis dos departamentos ao contrato (Depto(s). Responsáveis/Participantes). ***IMPLEMENTANDO***
-   - [ ] Enviar e-mails dependendo de critérios específicos.
+   - [x] Controle de acesso por responsáveis dos departamentos ao contrato. (Depto(s). Responsáveis/Participantes).
+   - [x] Enviar e-mails dependendo de critérios específicos. (Vencidos/Vencendo/Indeterminados).
    
 ---
 
