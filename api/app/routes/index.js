@@ -11,6 +11,7 @@ router.use('/api/contratos', require('./api/routecontratos'));
 router.use('/api/file', require('./api/routefiles'));
 router.use('/api/permission', require('./api/routepermissions'));
 router.use('/api/department', require('./api/routedepartments'));
+router.use('/api/inventory', require('./api/routeinventory'));
 
 /**
  * Podem ser tratados erros caso ocorram para

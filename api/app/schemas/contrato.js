@@ -42,7 +42,7 @@ const ContratoSchema = new Schema({
     anaJuridico: { type: Boolean },     // Analise juridica
     documentoList:  [ Documento.schema ], 
     natureza: { type: String },
-    options: { type: OptionsSchema, default: OptionsSchema },
+    options: { type: OptionsSchema, default: { OptionsSchema } },
     logEmail: [ LogEmailSchema ]
 }, { timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true }, collection: 'Contratos' });
 
