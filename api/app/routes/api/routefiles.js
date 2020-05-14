@@ -11,7 +11,7 @@ const permissionModule = require('../../../config/PermissionModule'); // Tipos d
 //var dirFile = path.dirname(__dirname); //Volta um diretório. // Descometar para gravar em public quando dev
 //const multipartMiddleware = multipart({ uploadDir: `./${config.diretorioContratos}` }) // Descometar para gravar em public quando dev
 
-var dirFile = (process.cwd()); //Volta um diretório. // Quando for compilar descomentar
+var dirFile = (process.cwd()); // Quando for compilar descomentar
 
 dirFile = path.join(dirFile, process.env.UPLOAD_DIR_CONTARTOS); //pasta onde os arquivos estão após API
 
