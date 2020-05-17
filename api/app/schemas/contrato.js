@@ -58,6 +58,7 @@ ContratoSchema.virtual('id').get(function() {
     return contractId
 });
 
+// Trigger
 // findByIdAndUpdate,findOne,findOneAndDelete, findOneAndRemove, findOneAndUpdate, update, updateOne,updateMany
 // ContratoSchema.post(['findOneAndUpdate'], function() {
 //     try{

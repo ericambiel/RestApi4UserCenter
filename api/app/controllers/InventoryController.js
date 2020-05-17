@@ -10,6 +10,15 @@ class InventoryController {
    constructor() { }
 
    /**
+    * Lista todo o inventário.
+    * @returns {Inventory} Model com todos os ativos
+    */
+   async listInventory() {
+      return await Inventory.find()
+      //.sort({ createdAt: 'asc' });
+   }
+
+   /**
     * Tentara inserir um novo ativo, se o numero do ativo já existir atualiza dados.
     * @param {JSON} asset JSON com objetos a serem inseridos ou atualizados
     * @returns {Inventory} Retorna modelo com ativo já inserido.

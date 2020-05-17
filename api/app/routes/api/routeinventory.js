@@ -6,13 +6,24 @@ var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
 const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
+router.get(
+   '/',
+   auth.required, 
+   routePermission.check(permissionModule.INVENTORY.select), 
+   async(req, res, next) => {
+      try{ 
+         let assets = await inventoryController.listInventory();
+         res.json(assets);
+      } catch(err) { next(err); }
+});
+
 router.post(
    '/',
    auth.required, 
    routePermission.check(permissionModule.INVENTORY.insert), 
    async(req, res, next) => {
       try{ 
-         let asset = await inventoryController.insertOrUpdateAsset(req.body.inventory);
+         let asset = await inventoryController.insertOrUpdateAsset(req.body);
          asset = await inventoryController.printAssetZPL(asset);
          res.json(asset);
       } catch(err) { next(err); }
