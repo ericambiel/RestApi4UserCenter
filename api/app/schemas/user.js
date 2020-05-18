@@ -115,7 +115,7 @@ UserSchema.methods.generateJWT = async function() {
             return Array.from(_permissions);
         }).catch((err) => {
             console.log(err); 
-            return {errors: 'Erro ao selecionar Permissões'};
+            return {errorMessage: 'Erro ao selecionar Permissões'};
         });
     
     const _departments = await Departments.find( { _id: this.departments } )
@@ -137,7 +137,7 @@ UserSchema.methods.generateJWT = async function() {
             // return _departments;
         }).catch((err) => {
             console.log(err); 
-            return {errors: 'Erro ao selecionar Departamentos'};
+            return {errorMessage: 'Erro ao selecionar Departamentos'};
         });
         
     // Cria Payload, aqui você deve definir qual objetos estarão no Payload do JWT.

@@ -1,6 +1,7 @@
 const ReadWriteFiles = require('../../lib/ReadWriteFiles');
-const Printer = require('../../lib/printer');
 const ConsoleLog = require('../../lib/ConsoleLog');
+const Printer = require('../../lib/printer');
+const printer = new Printer(process.env.ZPL_PRINTER);
 
 const Inventory = require('../schemas/inventory');
 
@@ -11,11 +12,38 @@ class InventoryController {
 
    /**
     * Lista todo o inventário.
-    * @returns {Inventory} Model com todos os ativos
+    * @returns {Inventory} Model com todos os ativos.
     */
    async listInventory() {
-      return await Inventory.find()
+      return await Inventory.find().catch(err => {throw err});
       //.sort({ createdAt: 'asc' });
+   }
+
+   /**
+    * Insere um ativo ao inventario.
+    * @param {JSON} asset JSON com objetos a serem inseridos.
+    * @returns {Inventory} Model com ativo inserido.
+    */
+   async insertOneAsset(asset) {
+      return await Inventory.create(asset).catch(err => {throw err});
+   }
+
+   /**
+    * Remove um ativo do inventário.
+    * @param {string} id ID completo do ativo no BD.
+    * @returns {Inventory} Model com ativo removido.
+    */
+   async deleteOneAsset(id) {
+      return await Inventory.findByIdAndRemove(id).catch(err => {throw err});
+   }
+
+    /**
+    * Atualiza um ativo do inventário.
+    * @param {string} id ID completo do ativo no BD.
+    * @returns {Inventory} Model com ativos atualizado.
+    */
+   async updateOneAsset(id) {
+      return await Inventory.findByIdAndUpdate(id, { new: true }).catch(err => {throw err});
    }
 
    /**
@@ -29,17 +57,26 @@ class InventoryController {
       asset,
       { new: true, upsert: true }) // New true pois necessita para imprimir se não over etiqueta ainda no BD.
    .catch(err => { throw err });
-}
+   }
+
+   // async rePrint(id) {
+   //    Inventory.findById(id)
+   //       .then(asset => {
+   //          // printer.checkStatusPrinting(asset.logPrinter[asset.logPrinter.length - 1].id)
+   //          // TODO: Verificar se a impressão foi finalizada antes de reprimir novamente
+   //       })
+   //       .catch(err => { throw err})
+   // }
 
    /**
     * Imprime etiqueta do ativo em impressora Zebra
     * @param {Inventory} asset Modelo com dados da etiqueta ser impressa.
-    * @returns {int} JobID da impressão gerada pelo SPOOL do sistema/impressora.
+    * @returns {int} JobID da impressão gerada pelo POOL do sistema/impressora.
     */
    async printAssetZPL(asset) {
       const templeteZPL = readZPLTemplete(fileLocation);
       const zPL = matchTagDate(asset, templeteZPL);
-      const printer = new Printer(process.env.ZPL_PRINTER);
+      // const printer = new Printer(process.env.ZPL_PRINTER);
 
       return await printer.printZPL(`${asset.assetNum}/${asset.subAssetNum}`, zPL)
       .then(async jobID => {

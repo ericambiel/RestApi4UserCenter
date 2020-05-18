@@ -19,9 +19,9 @@ class Printer {
   
   /**
    * Imprime etiqueta em impressora ZEBRA com código ZPL.
-   * @param {string} docName Nomo do documento a ser exibido no painel de gerencia do SPOOL.
+   * @param {string} docName Nomo do documento a ser exibido no painel de gerencia do POOL.
    * @param {string} zPL ZPL a ser impresso. 
-   * @returns {int} JobID da impressão gerada pelo SPOOL do sistema/impressora.
+   * @returns {int} JobID da impressão gerada pelo POOL do sistema/impressora.
    */
   async printZPL(docName, zPL) {
     try{
@@ -34,7 +34,7 @@ class Printer {
         docname: `Etiqueta Ativo: ${docName}`,
         type: 'RAW',
         success: jobID => {
-          new ConsoleLog().printConsole(`[INFO][PRINT_ZPL] ZPL em '${process.env.ZPL_PRINTER}' enviado ao SPOOL, impressão: ${docName}.`);          
+          new ConsoleLog().printConsole(`[INFO][PRINT_ZPL] ZPL enviado ao POOL de '${process.env.ZPL_PRINTER}', impressão: ${docName}.`);          
           _infoPrint = jobID;
         },
         error: err => {

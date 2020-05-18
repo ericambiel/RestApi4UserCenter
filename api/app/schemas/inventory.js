@@ -14,7 +14,7 @@ const InventorySchema = new Schema({
    class: { type: Number, required: [true, 'Não pode estar em branco'] },
    description: { type: String, required: [true, 'Não pode estar em branco'] },
    descriptionComp: { type: String }, // Descrição complementar
-   inventoryNum: { type: Number, required: [true, 'Não pode estar em branco'] },
+   inventoryNum: { type: Number },
    capitalizedOn: { type: Date, required: [true, 'Não pode estar em branco'] }, // Data de Incorporação
    costCenter: { type: Number },
    logPrinter: [ LogPrinterSchema ]

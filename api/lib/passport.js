@@ -14,7 +14,7 @@ passport.use(new LocalStrategy({
 }, function(userName, password, done) {
   User.findOne({userName: userName}).then(user => {
     if(!user || !user.validPassword(password)){
-      return done(null, false, {errors: {'credentials': 'Usuário ou senha inválidos.'}});
+      return done(null, false, {errorMessage: 'Usuário ou senha inválidos.'});
     }
 
     return done(null, user);
