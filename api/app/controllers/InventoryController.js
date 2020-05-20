@@ -2,10 +2,10 @@ const ReadWriteFiles = require('../../lib/ReadWriteFiles');
 const ConsoleLog = require('../../lib/ConsoleLog');
 const Printer = require('../../lib/Printer');
 const printer = new Printer(process.env.ZPL_PRINTER);
+const fileLocation = process.env.ZPL_TEMPLETE_ASSET; // Template usado para gerar RAW
 
 const Inventory = require('../schemas/inventory');
 
-let fileLocation = 'api/public/zpl/assetZPL.zpl'; // Template usado para gerar RAW
 
 class InventoryController {
    constructor() { }
@@ -149,7 +149,7 @@ function matchTagDate(asset, templeteZPL) {
  */
 function readZPLTemplete(fileLocation) {
    fileLocation = new ReadWriteFiles().setPathFile(fileLocation);
-   return new ReadWriteFiles().readFileSync(fileLocation, 'string');
+   return new ReadWriteFiles().readFileSync(fileLocation.pathFileCWD, 'string');
  }
 
 module.exports = new InventoryController;

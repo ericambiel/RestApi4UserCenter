@@ -1,13 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-let rootPath;
 
 class ReadWriteFiles {
    constructor() { }
 
-   /** Returns the project's root directory. */
+   /** Returns the project's root directory. 
+    * @returns {string} Returns two paths, one for 
+    * instance of object, and other to process.
+   */
    getRootPath() {
-      rootPath = path.resolve(__dirname);   
+      let rootPath = path.resolve(__dirname); //Path to instance that is executing. 
+      let rootPathCWD = path.resolve(process.cwd()); //Path to system process.
       
       while(rootPath){
          if(fs.existsSync(rootPath + path.sep + 'package.json')){
@@ -15,15 +18,20 @@ class ReadWriteFiles {
          }
          rootPath = rootPath.substring(0, rootPath.lastIndexOf(path.sep));
       }
-      return rootPath;
+      return { rootPath, rootPathCWD };
    }
+
    /**
-    * Full path to the informed file informed.
+    * Discovery full path to the file informed.
     * @param {string} pathFile Path from the project's root directory to the informed file.
+    * @returns {string} Returns two full paths, one for 
+    * instance of object, and other to process..
     */
    setPathFile(pathFile) {
-      pathFile = path.join(this.getRootPath(), pathFile); //pasta onde os arquivos estão após API
-      return pathFile
+      const  { rootPath, rootPathCWD } = this.getRootPath();
+      const pathFileCWD = path.join(rootPathCWD, pathFile);
+      pathFile = path.join(rootPath, pathFile);
+      return { pathFile, pathFileCWD }
    }
 
    /**
@@ -39,9 +47,9 @@ class ReadWriteFiles {
          return data;
       });
 
-      option === 'string' ? data = data.toString() : data
+      option === 'string' ? data = data.toString() : data;
 
-      return data
+      return data;
    }
 }
 
