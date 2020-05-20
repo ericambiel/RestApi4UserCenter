@@ -108,3 +108,4 @@ api/tools/JSON/*.json
 public/files
 api/restapi4usercenter.*
 .history
+restapi4usercenter.exe

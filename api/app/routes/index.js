@@ -24,7 +24,7 @@ router.use((err, req, res, next) => { // Quando passamos um Middleware com 4 par
       Object.keys(err.errors).reduce( (errors, key) => {
         keys += `${key}, `
         errors[key] = err.errors[key].message;
-        errors['errorMessage'] = `Verifique o(s) campo(s) [${keys}] novamente.`;
+        errors['message'] = `Verifique o(s) campo(s) [${keys}] novamente.`;
         return errors ;
       }, {})
     );

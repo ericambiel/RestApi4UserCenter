@@ -51,10 +51,10 @@ router.get(
           .then(result => res.json(result))
           .catch(error => res.json(error));
       } else res.status(403).json({
-          errorMessage: 'Você não possui permissão para visualizar os contratos,\n necessário ser responsável pelo departamento.'
+        message: 'Você não possui permissão para visualizar os contratos,\n necessário ser responsável pelo departamento.'
         });
     }catch(err){
-      return res.status(500).send({ errorMessage: err.message})
+      return res.status(500).send({ message: err.message})
     }
 });
 

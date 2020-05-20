@@ -1,6 +1,6 @@
 const ReadWriteFiles = require('../../lib/ReadWriteFiles');
 const ConsoleLog = require('../../lib/ConsoleLog');
-const Printer = require('../../lib/printer');
+const Printer = require('../../lib/Printer');
 const printer = new Printer(process.env.ZPL_PRINTER);
 
 const Inventory = require('../schemas/inventory');
@@ -80,21 +80,22 @@ class InventoryController {
 
    /**
     * Imprime etiqueta do ativo em impressora Zebra
-    * @param {Inventory} asset Modelo com dados da etiqueta ser impressa.
-    * @returns {int} JobID da impressão gerada pelo POOL do sistema/impressora.
+    * @param {Inventory} assetModel Modelo com dados da etiqueta ser impressa.
+    * @returns {int | Object} JobID da impressão gerada pelo POOL do sistema/impressora e informações de impressão.
     */
-   async printAssetZPL(asset) {
+   async printAssetZPL(assetModel) {
       const templeteZPL = readZPLTemplete(fileLocation);
-      const zPL = matchTagDate(asset, templeteZPL);
+      const zPL = matchTagDate(assetModel, templeteZPL);
       // const printer = new Printer(process.env.ZPL_PRINTER);
 
-      return await printer.printZPL(`${asset.assetNum}/${asset.subAssetNum}`, zPL)
+      return await printer.printZPL(`${assetModel.assetNum} - ${assetModel.subAssetNum}`, zPL)
       .then(async jobID => {
-         const jobInfo = await printer.checkStatusPrinting(jobID); 
-         return await logPrint(asset, 'jobInfo', jobInfo).catch(err => { throw err });
+         const jobInfo = await printer.checkStatusPrinting(jobID);
+         const asset = await logPrint(assetModel, 'jobInfo', jobInfo).catch(err => { throw err })
+         return  { asset, jobInfo };
       })
       .catch(async err => { 
-         await logPrint(asset, 'jobInfo', err).catch(err => { throw err });
+         await logPrint(assetModel, 'jobInfo', err).catch(err => { throw err });
          throw err });
    }
 }

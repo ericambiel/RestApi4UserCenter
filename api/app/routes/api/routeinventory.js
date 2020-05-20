@@ -40,15 +40,16 @@ router.patch(
       } catch(err) { next(err); }
 });
 
+/** Insere ativo e imprime */
 router.post(
    '/',
    auth.required, 
    routePermission.check(permissionModule.INVENTORY.insert), 
    async(req, res, next) => {
       try{ 
-         let asset = await inventoryController.insertOneAsset(req.body);
-         asset = await inventoryController.printAssetZPL(asset);
-         res.json(asset);
+         let assetModel = await inventoryController.insertOneAsset(req.body);
+         let { asset, jobInfo } = await inventoryController.printAssetZPL(assetModel);
+         res.json({ 'asset': asset, message: `${jobInfo.document} enviado ao POOL da impressora, estado: ${jobInfo.status}.` });
       } catch(err) { next(err); }
  });
 
@@ -58,8 +59,8 @@ router.post(
    routePermission.check(permissionModule.INVENTORY.insert), 
    async(req, res, next) => {
       try{ 
-         let asset = await inventoryController.printAssetZPL(req.body);
-         res.json(asset);
+         let { asset, jobInfo } = await inventoryController.printAssetZPL(req.body);
+         res.json({ 'asset': asset, message: `${jobInfo.document} enviado ao POOL da impressora, estado: ${jobInfo.status}.` });
       } catch(err) { next(err); }
  });
 

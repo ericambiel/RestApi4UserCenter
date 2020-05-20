@@ -67,7 +67,8 @@
   "pkg": {
     "assets": [
       "node_modules/**",
-      "api/views/**"
+      "api/views/**",
+      "api/public/**"
     ],
     "targets": [
       "node13"

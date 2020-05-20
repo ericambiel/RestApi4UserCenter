@@ -11,11 +11,11 @@ const passport = require('passport');
 /** Faz login do usuário no sistema */
 router.post('/login', (req, res, next) => {  
   if(!req.body.userName){
-    return res.status(422).json({errorMessage: 'Usuário não pode estar em branco' });
+    return res.status(422).json({message: 'Usuário não pode estar em branco' });
   }
 
   if(!req.body.password){
-    return res.status(422).json({errorMessage: 'Senha não pode estar em branco' });
+    return res.status(422).json({message: 'Senha não pode estar em branco' });
   }
   
   // session: false - Pq usamos JWT ao invés de seções

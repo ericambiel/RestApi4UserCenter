@@ -14,7 +14,7 @@ const ConsoleLog = require('../../../lib/ConsoleLog');
 
 var dirFile = (process.cwd()); // Quando for compilar descomentar
 
-dirFile = path.join(dirFile, process.env.UPLOAD_DIR_CONTARTOS); //pasta onde os arquivos estão após API
+dirFile = path.join(dirFile, process.env.UPLOAD_DIR_CONTRATOS); //pasta onde os arquivos estão após API
 
 const multipartMiddleware = multipart({ uploadDir: `${dirFile}` }) // Quando for compilar descomentar
 
