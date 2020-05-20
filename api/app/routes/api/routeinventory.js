@@ -18,12 +18,13 @@ router.get(
 });
 
 router.delete(
-   '/',
+   '/:id',
    auth.required, 
    routePermission.check(permissionModule.INVENTORY.delete), 
    async(req, res, next) => {
       try{ 
-         let assets = await inventoryController.deleteOneAsset(req.body._id);
+         const { id } = req.params;
+         let assets = await inventoryController.deleteOneAsset(id);
          res.json(assets);
       } catch(err) { next(err); }
 });
@@ -34,7 +35,7 @@ router.patch(
    routePermission.check(permissionModule.INVENTORY.update), 
    async(req, res, next) => {
       try{ 
-         let assets = await inventoryController.updateOneAsset(req.body._id);
+         let assets = await inventoryController.updateOneAsset(req.body);
          res.json(assets);
       } catch(err) { next(err); }
 });

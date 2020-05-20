@@ -34,16 +34,26 @@ class InventoryController {
     * @returns {Inventory} Model com ativo removido.
     */
    async deleteOneAsset(id) {
-      return await Inventory.findByIdAndRemove(id).catch(err => {throw err});
+      return await Inventory.findByIdAndRemove(id)
+      // .lean()
+      .then(asset => {
+         let response = { message: 'Ativo não existe, tente outro ID.' }
+         if (asset !== null) {
+            response = {'asset': asset }
+            response.message = `Ativo '${asset.assetNum} - ${asset.subAssetNum}' apagado.`
+         }
+         return response;
+      })
+      .catch(err => {throw err});
    }
 
     /**
     * Atualiza um ativo do inventário.
-    * @param {string} id ID completo do ativo no BD.
+    * @param {JSON} asset Ativo a ser atualizado.
     * @returns {Inventory} Model com ativos atualizado.
     */
-   async updateOneAsset(id) {
-      return await Inventory.findByIdAndUpdate(id, { new: true }).catch(err => {throw err});
+   async updateOneAsset(asset) {
+      return await Inventory.findByIdAndUpdate(asset._id, asset, { new: true }).catch(err => {throw err});
    }
 
    /**
@@ -123,10 +133,10 @@ function matchTagDate(asset, templeteZPL) {
  
    zPL = templeteZPL.replace('_logo_', process.env.ZPL_LOGO);
    zPL = zPL.replace('_header_', `${asset.assetNum} / ${asset.subAssetNum}         ${asset.class}`);
-   zPL = zPL.replace('_capitalizedOn_', asset.capitalizedOn.toLocaleDateString());
+   zPL = zPL.replace('_capitalizedOn_', new Date(asset.capitalizedOn).toLocaleDateString());
    zPL = zPL.replace('_barCode_', `${asset.assetNum}/${asset.subAssetNum}`)
-   zPL = zPL.replace('_description_', asset.description.toUpperCase());
-   zPL = zPL.replace('_descriptionComp_', asset.descriptionComp.toUpperCase());
+   zPL = zPL.replace('_description_', asset.description !== null ? asset.description.toUpperCase() : '');
+   zPL = zPL.replace('_descriptionComp_', asset.descriptionComp !== null ? asset.descriptionComp.toUpperCase() : '');
  
    return zPL;
  }
@@ -140,18 +150,5 @@ function readZPLTemplete(fileLocation) {
    fileLocation = new ReadWriteFiles().setPathFile(fileLocation);
    return new ReadWriteFiles().readFileSync(fileLocation, 'string');
  }
-
-//  /**
-//  * Faz chamadas a função que realizara uma consulta no banco NoSQL,
-//  * chama função que imprime e função que registra se etiqueta foi ou não impressa.
-//  * @param {*} firstParamAnd Campo contendo primeiro nível de procura AND
-//  * @param {*} secondParamAnd Campo contendo segundo nível de procura AND
-//  * @param {*} thirdParamAnd Campo contendo terceiro nível de procura AND
-//  * @param {*} firstParamProject Compo para filtrar valores encontrados.
-//  * @param {String} fieldToLog Campo para inserir estado do envio de email, também usado para definir templete.
-//  */
-// async function corePrintAsset(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject, fieldToLog) {
-
-// }
 
 module.exports = new InventoryController;
