@@ -1,81 +1,134 @@
 const ldapjs = require('ldapjs');
+var Promise = require('bluebird');
 
 const ConsoleLog = require ('../lib/ConsoleLog');
 
 // ldapjs.Attribute.settings.guid_format = ldapjs.GUID_FORMAT_B;
 
-const options = {
-  filter: '(&(objectclass=user)(sAMAccountName=' + 'eric.ambiel' + '))',
-  // filter: '(&(objectclass=user))',
-  // filter: '(&(cn=*))',
-  // filter: '(objectclass=user)',
-  scope: 'sub',
-//   paged: true,
-//   sizeLimit: 200,
-  // attributes: ['sAMAccountName','mail','manager','memberOf']
-  attributes:['SamAccountName']
-  // attributes: ['objectGUID'] Trás alguns administradores do sistema
-};
-
-let client;
-
 class LDAP {
-    constructor() { 
-        client = ldapjs.createClient({
-            // url: `${process.env.LDAP_SERVER}:${process.env.LDAP_PORT}/cn=${process.env.LDAP_USER}, ou=users, ${process.env.LDAP_START_POINT}`,
-            url: `${process.env.LDAP_SERVER}:${process.env.LDAP_PORT}/`,
-            timeout: 5000,
-            connectTimeout: 10000
-        });
-    }
+    constructor() { }
     /**
-     * Obtém via LDAP usuários de um servidor AD Microsoft.
+     * Obtém via LDAP informações de todos os usuários de um servidor AD Microsoft.
      * @return {Array<any>} Retorna lista com objetos adquiridos de um servidor AD. 
      */
-    async getUsersAD() {
-        let adUsers = [];
+     getAllUsersAD() {
 
-        try {
-            client.bind(process.env.LDAP_USER, process.env.LDAP_PASSWORD, error => {
-                if(error) throw error;
-            });
+        const options = {
+            filter: '(&(objectclass=user))',
+            scope: 'sub',
+        };
 
-            await client.search(process.env.LDAP_START_POINT, options, async (error, res) => {
-                if (error) throw error;
-                else {
-                    await res.on('searchEntry', entry => {
-                        if(entry.object){ adUsers.push(entry.object); }
-                    });
+        let client = createLDAPClient(process.env.LDAP_SERVER, process.env.LDAP_PORT);
+        
+        connectLDAPClient(client, process.env.LDAP_USER, process.env.LDAP_PASSWORD);
+        
+        Promise.promisifyAll(client);
 
-                    // res.on('searchReference', function(referral) {
-                    //     console.log('referral: ' + referral.uris.join());
-                    // });
-                    
-                    await res.on('error', error => {
-                        // disconnectLDAPClient(client);
-                        new ConsoleLog('error').printConsole(`[LDAP] Erro durante busca no servidor LDAP`);
-                        throw error;
-                    });
-                    
-                    await res.on('end', res => {
-                        // console.log('status: ' + res.status);
-                        disconnectLDAPClient(client);
-                    });
-                }
-            });
-        } catch(error){
-            disconnectLDAPClient(client);
-            throw error
-        }
-        return adUsers;
+        return client.searchAsync(process.env.LDAP_START_POINT, options)
+            .then(search => {
+                return searchPromise(search);
+            }).then(entries => {
+                return entries.objects;
+            }).catch(err => {
+                disconnectLDAPClient(client);
+                throw err
+            }).finally(disconnectLDAPClient(client));
+    }
+
+    /**
+     * Obtém via LDAP informações somente um usuário do servidor AD Microsoft.
+     * @param {String} sAMAccountName conta do usuário no AD
+     */
+    getOneUserAD(sAMAccountName, password) {
+        const options = {
+            filter: `(&(objectclass=user)(sAMAccountName=${sAMAccountName}))`,
+            scope: 'sub',
+        };
+
+        let client = createLDAPClient(process.env.LDAP_SERVER, process.env.LDAP_PORT);
+        
+        connectLDAPClient(client, sAMAccountName, password);
+        
+        Promise.promisifyAll(client);
+
+        return client.searchAsync(process.env.LDAP_START_POINT, options)
+            .then(search => {
+                return searchPromise(search);
+            }).then(entries => {
+                return entries.objects;
+            }).catch(err => {
+                disconnectLDAPClient(client);
+                throw err
+            }).finally(disconnectLDAPClient(client));
     }
 }
 
+function searchPromise(search) {
+    return new Promise((resolve, reject) => {
+        let found = false;
+        let referrals = [];
+        let entries = [];
+        entries.objects = [];
+        
+        search.on('searchEntry', entry => {
+            // if(entry.object){ adUsers.push(entry.object); }
+            found = true;
+            entries.push(entry)
+            entries.objects.push(entry.object);
+        });
+
+        search.on('searchReference', referral => {
+            found = true;
+            referrals.push(referral);
+        });
+        
+        search.on('error', error => {
+            reject(error);
+        });
+        
+        search.on('end', res => {
+            if (!found) reject('Não foi encontrado nenhuma entrada no servidor LDAP');
+            else resolve(entries, referrals);
+        });
+    });
+  }
+
+function createLDAPClient(ldapServer, ldapPort){
+    return ldapjs.createClient({
+        // url: `${process.env.LDAP_SERVER}:${process.env.LDAP_PORT}/cn=${process.env.LDAP_USER}, ou=users, ${process.env.LDAP_START_POINT}`,
+        url: `${ldapServer}:${ldapPort}/`,
+        timeout: 5000,
+        connectTimeout: 10000
+    })
+}
+
+/**
+ * 
+ * @param {ldapjs.createClient} client 
+ */
+function connectLDAPClient(client, user, password) {
+    // return Promise.denodeify(client.bind.bind(client));
+    return client.bind(user, password, (err, res) => {
+        if(err) {
+            new ConsoleLog('error')
+                .printConsole('[LDAP] Erro ao conectar-se ao servidor LDAP, verifique as configurações "LDAP"" em .env');
+            throw err;
+        }
+        // return res
+    });
+    
+}
+
+/**
+ * 
+ * @param {ldapjs.createClient} client 
+ */
 function disconnectLDAPClient(client) {
-    client.unbind(error => {
-        if (error) {
+    // return Promise.denodeify(client.search.bind(client));
+    client.unbind(err => {
+        if (err) {
             new ConsoleLog('error').printConsole('[LDAP] Erro ao desconectar do servidor LDAP');
-            throw error; 
+            throw err; 
         } 
     });
     new ConsoleLog().printConsole('[LDAP] Desconectado do servidor LDAP');

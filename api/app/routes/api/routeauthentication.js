@@ -36,8 +36,8 @@ router.post('/login', (req, res, next) => {
 
 router.get('/ldap', async (req, res, next) => {
   try{
-    const teste = await ldap.getUsersAD();
-    res.json(teste);
+    const teste = await ldap.getAllUsersAD();
+    return res.json(teste);
   } catch (err) { next(err); }
 });
 

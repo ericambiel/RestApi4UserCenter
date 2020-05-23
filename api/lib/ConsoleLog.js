@@ -1,8 +1,9 @@
 let now;
+let _type;
 
 class ConsoleLog {
    constructor(type) {
-     this.type = this.type === undefined ? '' : type.toString().toLowerCase();
+     _type = type === undefined ? '' : type.toString().toLowerCase();
      now = `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
    }
    
@@ -14,7 +15,7 @@ class ConsoleLog {
     * @return {string} Retorna erro ou informação ao STDIO 
     */
    printConsole(message){
-     switch (this.type) {
+     switch (_type) {
         case 'info': console.info(`${now} [INFO]${message}`); break;
         case 'error': console.error(`${now} [ERROR]${message}`); break;
         case 'warn': console.warn(`${now} [WARN]${message}`); break;
