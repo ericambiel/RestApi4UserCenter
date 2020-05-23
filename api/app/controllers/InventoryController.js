@@ -117,9 +117,9 @@ async function logPrint(inventory, fieldToLog, jobInfo) {
    query.$push.logPrinter[fieldToLog] = jobInfo instanceof Error ? jobInfo.message.toString() : jobInfo; // Se erro false
    return await Inventory.findByIdAndUpdate(inventory._id, query, { new: true })
    .then(asset => { 
-     new ConsoleLog().printConsole(jobInfo instanceof Error
-       ? `[ERROR][INVENTARIO] ${fieldToLog} - Erro ao imprimir Ativo; ativo: _id: ${inventory._id}`
-       : `[INFO][INVENTARIO] ${fieldToLog} - Estado: '${jobInfo.status.toString()}'; ativo: _id: ${inventory._id}`);
+     jobInfo instanceof Error
+      ? new ConsoleLog('error').printConsole(`[INVENTARIO] ${fieldToLog} - Erro ao imprimir Ativo; ativo: _id: ${inventory._id}`)
+      : new ConsoleLog('info').printConsole(`[INVENTARIO] ${fieldToLog} - Estado: '${jobInfo.status.toString()}'; ativo: _id: ${inventory._id}`)
      return asset; })
    .catch(err => { throw err; });
  }

@@ -43,8 +43,9 @@
     "jade": "^1.11.0",
     "json-schema-defaults": "^0.4.0",
     "jsonwebtoken": "^8.5.1",
-    "moment": "^2.24.0",
-    "mongoose": "^5.9.6",
+    "ldapjs": "^1.0.2",
+    "moment": "^2.26.0",
+    "mongoose": "^5.9.15",
     "mongoose-hidden": "^1.8.1",
     "mongoose-unique-validator": "^2.0.3",
     "nodemailer": "^6.4.6",
@@ -61,7 +62,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.4"
   },
   "bin": "./api/app/bin/www",
   "pkg": {

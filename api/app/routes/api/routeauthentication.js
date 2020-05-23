@@ -1,5 +1,8 @@
-var router = require('express').Router();
+const router = require('express').Router();
 const passport = require('passport');
+
+const LDAP = require('../../../lib/LDAP');
+const ldap = new LDAP();
 
 // var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 // const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
@@ -29,6 +32,13 @@ router.post('/login', (req, res, next) => {
       return res.status(422).json(info);
     }
   })(req, res, next);
+});
+
+router.get('/ldap', async (req, res, next) => {
+  try{
+    const teste = await ldap.getUsersAD();
+    res.json(teste);
+  } catch (err) { next(err); }
 });
 
 /**

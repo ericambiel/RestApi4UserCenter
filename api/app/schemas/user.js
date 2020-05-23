@@ -88,7 +88,7 @@ UserSchema.methods.setPassword = function(password) {
 UserSchema.methods.validPassword = function(password) {
     // Síncrono
     const result = bcrypt.compareSync(password, this.hashedPass);
-    new ConsoleLog().printConsole(`[INFO][AUTHENTICATION] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
+    new ConsoleLog('info').printConsole(`[AUTHENTICATION] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
     return result;
     
     // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar bloqueio da thread principal.

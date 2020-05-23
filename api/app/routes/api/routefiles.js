@@ -28,7 +28,7 @@ function renameFile(dirFile, fileName ,newFileName) {
   // TODO: FIX: Arquivos de mesmo nome estão sendo sobrescritos, enviar mensagem que arquivo já existe!!!
   fs.rename(`${dirFile}/${fileName}`, `${dirFile}/${newFileName}`, err => {
     if ( err ) {
-      new ConsoleLog().printConsole(`[ERROR][FILES] - ${err.message}`)
+      new ConsoleLog('error').printConsole(`[FILES] - ${err.message}`)
       return err;
     }
   });

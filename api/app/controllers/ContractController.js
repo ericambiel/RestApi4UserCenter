@@ -214,9 +214,9 @@ async function logEmail(contrato, fieldToLog, infoMail) {
   query.$push.logEmail[fieldToLog] = infoMail instanceof Error ? false : true; // Se erro false
   return await Contrato.findByIdAndUpdate(contrato._id, query)
   .then(() => { 
-    new ConsoleLog().printConsole(infoMail instanceof Error
-      ? `[ERROR][CONTRATOS] ${fieldToLog} - Erro ao enviar E-Mail; contrato: _id: ${contrato._id}`
-      : `[INFO][CONTRATOS] ${fieldToLog} - E-Mail enviado com sucesso; contrato: _id: ${contrato._id}`);
+    infoMail instanceof Error
+      ? new ConsoleLog('error').printConsole(`[CONTRATOS] ${fieldToLog} - Erro ao enviar E-Mail; contrato: _id: ${contrato._id}`)
+      : new ConsoleLog('info').printConsole(`[CONTRATOS] ${fieldToLog} - E-Mail enviado com sucesso; contrato: _id: ${contrato._id}`)
     return infoMail; })
   .catch(err => { throw err; });
 }
@@ -241,7 +241,7 @@ function selectTemplate(identifier){
       options.subject = 'Contrato Expirado';
       return options;
     default:
-      new ConsoleLog().printConsole('[ERROR] Templete para email não encontrado');
+      new ConsoleLog('error').printConsole('Templete para email não encontrado');
       throw new Error('Templete para email não encontrado');
   }
 }
