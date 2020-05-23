@@ -10,10 +10,11 @@ const permissionModule = require('../../../config/PermissionModule'); // Tipos d
 
 //var dirFile = path.dirname(__dirname); //Volta um diretório. // Descometar para gravar em public quando dev
 //const multipartMiddleware = multipart({ uploadDir: `./${config.diretorioContratos}` }) // Descometar para gravar em public quando dev
+const ConsoleLog = require('../../../lib/ConsoleLog');
 
-var dirFile = (process.cwd()); //Volta um diretório. // Quando for compilar descomentar
+var dirFile = (process.cwd()); // Quando for compilar descomentar
 
-dirFile = path.join(dirFile, process.env.UPLOAD_DIR_CONTARTOS); //pasta onde os arquivos estão após API
+dirFile = path.join(dirFile, process.env.UPLOAD_DIR_CONTRATOS); //pasta onde os arquivos estão após API
 
 const multipartMiddleware = multipart({ uploadDir: `${dirFile}` }) // Quando for compilar descomentar
 
@@ -27,7 +28,7 @@ function renameFile(dirFile, fileName ,newFileName) {
   // TODO: FIX: Arquivos de mesmo nome estão sendo sobrescritos, enviar mensagem que arquivo já existe!!!
   fs.rename(`${dirFile}/${fileName}`, `${dirFile}/${newFileName}`, err => {
     if ( err ) {
-      console.log('ERROR: ' + err);
+      new ConsoleLog().printConsole(`[ERROR][FILES] - ${err.message}`)
       return err;
     }
   });

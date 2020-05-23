@@ -148,6 +148,13 @@ function sendMailContract(contrato, identifier) {
     .catch(err => { throw err });
 }
 
+/**
+ * Encontra contratos que serão enviados e-mails.
+ * @param {*} firstParamAnd 1º parâmetro AND da query
+ * @param {*} secondParamAnd 2º parâmetro AND da query
+ * @param {*} thirdParamAnd 3º parâmetro AND da query
+ * @param {*} firstParamProject 1º parâmetro OR da query
+ */
 async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject ) {
   return await Contrato.aggregate(
     [
@@ -194,8 +201,8 @@ async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, 
  * Registra informações de horários e mensagens de erro ou não
  * no envio de email para o contrato.
  * @param {Contrato} contrato Model do contrato que foi atualizado.
- * @param {mail} infoMail Contem informações do disparo de email.
  * @param {String} fieldToLog Campo que sera usado para registro
+ * @param {mail} infoMail Contem informações do disparo de email.
  */
 async function logEmail(contrato, fieldToLog, infoMail) {
   const query = {

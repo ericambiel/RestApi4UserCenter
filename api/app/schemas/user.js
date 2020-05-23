@@ -5,7 +5,7 @@ const Permissions = require('./permission');
 const mongoose = require('mongoose') // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
 const validator = require('validator') // Classe usada para validações de dados
-const uniqueValidator = require('mongoose-unique-validator'); //Verifica se é dado é no banco
+const uniqueValidator = require('mongoose-unique-validator'); // Verifica se é o único no banco
 const bcrypt = require('../../../node_modules/bcrypt/bcrypt'); // Criptografa senha a partir de um token.
 const mongooseHidden = require('mongoose-hidden')();
 var jwt = require('jsonwebtoken'); // Gerador Token JWT. 
@@ -88,7 +88,7 @@ UserSchema.methods.setPassword = function(password) {
 UserSchema.methods.validPassword = function(password) {
     // Síncrono
     const result = bcrypt.compareSync(password, this.hashedPass);
-    new ConsoleLog().printConsole(`[INFO][CONTARTOS] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
+    new ConsoleLog().printConsole(`[INFO][AUTHENTICATION] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
     return result;
     
     // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar bloqueio da thread principal.
@@ -115,7 +115,7 @@ UserSchema.methods.generateJWT = async function() {
             return Array.from(_permissions);
         }).catch((err) => {
             console.log(err); 
-            return {errors: 'Erro ao selecionar Permissões'};
+            return {message: 'Erro ao selecionar Permissões'};
         });
     
     const _departments = await Departments.find( { _id: this.departments } )
@@ -137,7 +137,7 @@ UserSchema.methods.generateJWT = async function() {
             // return _departments;
         }).catch((err) => {
             console.log(err); 
-            return {errors: 'Erro ao selecionar Departamentos'};
+            return {message: 'Erro ao selecionar Departamentos'};
         });
         
     // Cria Payload, aqui você deve definir qual objetos estarão no Payload do JWT.

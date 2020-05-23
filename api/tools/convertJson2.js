@@ -174,11 +174,12 @@ function getDocumentoList (objDeBusca, indexContrato) {
     for ( var i = 0; i < objDeBusca[indexContrato].length; i++ ){
         var documentoList = Object.create( documentoListSchema );
         if ( getKeyByValue(objFormado, "nome", objDeBusca[indexContrato][i]["nome"]) === -1) {  // Verifica se o valor existe antes de criar o objeto e coloca-lo a lista
-            if( documentoList.nome = objDeBusca[indexContrato][i]["nome"] == null || '') {
-            } else {
+            if(objDeBusca[indexContrato][i]["nome"] == null || '') 
+                return
+            else {
                 documentoList.nome = objDeBusca[indexContrato][i]["nome"],
                 documentoList.descricao = objDeBusca[indexContrato][i]["nome"].replace(/\..*/,''),
-                documentoList.diretorio =  process.env.UPLOAD_DIR_CONTARTOS,
+                documentoList.diretorio =  process.env.UPLOAD_DIR_CONTRATOS,
                 //documentoList.diretorio =  objDeBusca[indexContrato][i]["diretorio"],
                 documentoList.tipo = objDeBusca[indexContrato][i]["nome"].replace(/^.*\./, ''),
                 documentoList.numAditivo = objDeBusca[indexContrato][i]["numAditivo"],

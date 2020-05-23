@@ -42,7 +42,7 @@ const ContratoSchema = new Schema({
     anaJuridico: { type: Boolean },     // Analise juridica
     documentoList:  [ Documento.schema ], 
     natureza: { type: String },
-    options: { type: OptionsSchema, default: OptionsSchema },
+    options: { type: OptionsSchema, default: { OptionsSchema } },
     logEmail: [ LogEmailSchema ]
 }, { timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true }, collection: 'Contratos' });
 
@@ -58,6 +58,7 @@ ContratoSchema.virtual('id').get(function() {
     return contractId
 });
 
+// Trigger
 // findByIdAndUpdate,findOne,findOneAndDelete, findOneAndRemove, findOneAndUpdate, update, updateOne,updateMany
 // ContratoSchema.post(['findOneAndUpdate'], function() {
 //     try{

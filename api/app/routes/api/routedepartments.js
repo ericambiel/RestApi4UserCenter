@@ -32,7 +32,7 @@ router.get(
         Department.findById(id).populate(['departResponsible'])
             .then(department => {
                 if( department !== null) res.json(department)
-                else res.json({ error: 'ID Não encontrado'});
+                else res.json({ message: 'ID Não encontrado'});
             })
             .catch(next)
     }
@@ -58,7 +58,7 @@ router.delete(
                     User.findByIdAndUpdate(user, { $pull: { departments: department._id } }) // Procura em Department e remove
                         .catch(next);
                 })
-            } else res.json({ error: 'ID Não encontrado'}); 
+            } else res.json({ message: 'ID Não encontrado'}); 
         }
         ).catch(next); 
     }
@@ -105,7 +105,7 @@ router.post(
                 // })
                 // .catch(next);
             } catch (err) {
-                return res.status(400).send({ errors: err.message})
+                return res.status(500).send({ message: err.message})
             }
         });
 
@@ -147,7 +147,7 @@ router.patch(
                         : res.status(400).json({ department: { message: 'ID não encontrado' } });
                     });
         }catch(err){
-            return res.status(400).send({ errors: err.message})
+            return res.status(500).send({ message: err.message})
         }
 });
 

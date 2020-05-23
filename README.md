@@ -25,6 +25,6 @@ REST API que irá fornecer todos os dados necessário para o projeto UserCenter:
    
 ---
 
-- [ ] **Modulo - Impressão Patrimônio**
-   - [ ] Criação end Inserção/Modificação/Alteração/Exclusão.
-   - [ ] Impressão de etiquetas em impressora Zebra.
+- [x] **Modulo - Impressão Patrimônio**
+   - [x] Criação end Inserção/Modificação/Alteração/Exclusão.
+   - [x] Impressão de etiquetas em impressora Zebra.
