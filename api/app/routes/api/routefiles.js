@@ -1,7 +1,8 @@
 var router = require('express').Router();
 const path = require('path');
 const multipart = require('connect-multiparty'); // Middleware automatiza gravação e leitura de arquivos
-require('dotenv-safe').config();
+require('dotenv-safe').config({allowEmptyValues: true});
+
 var fs = require('fs');
 
 var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN

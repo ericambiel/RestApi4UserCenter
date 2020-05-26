@@ -1,4 +1,4 @@
-require("dotenv-safe").config(); // Configurações de ambiente.
+require('dotenv-safe').config({allowEmptyValues: true}); // Configurações de ambiente.
 require('./estabFiscal'); // Necessários caso use referencia ao Model
 const Departments = require('./department');
 const Permissions = require('./permission');
@@ -9,7 +9,7 @@ const uniqueValidator = require('mongoose-unique-validator'); // Verifica se é 
 const bcrypt = require('../../../node_modules/bcrypt/bcrypt'); // Criptografa senha a partir de um token.
 const mongooseHidden = require('mongoose-hidden')();
 var jwt = require('jsonwebtoken'); // Gerador Token JWT. 
-const ConsoleLog = require('../../lib/ConsoleLog');
+// const ConsoleLog = require('../../lib/ConsoleLog');
 
 const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
     userName: { 
@@ -88,7 +88,7 @@ UserSchema.methods.setPassword = function(password) {
 UserSchema.methods.validPassword = function(password) {
     // Síncrono
     const result = bcrypt.compareSync(password, this.hashedPass);
-    new ConsoleLog('info').printConsole(`[AUTHENTICATION] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
+    // new ConsoleLog('info').printConsole(`[AUTHENTICATION] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
     return result;
     
     // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar bloqueio da thread principal.
