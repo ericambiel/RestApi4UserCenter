@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const passport = require('passport');
+const LDAP = require('../../../lib/LDAP');
 
 // var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 // const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
@@ -20,7 +21,10 @@ router.post('/login', (req, res, next) => {
   
   // session: false - Pq usamos JWT ao invés de seções
   passport.authenticate('local', {session: false}, async (err, user, info) => {
-    if(err){ return next(err); }
+    if(err && err.status !== undefined) 
+      return res.status(err.status).json(err.error);
+    else if(err)
+      return next(err);
 
     if(user){
       // user.token = user.generateJWT();
@@ -30,6 +34,12 @@ router.post('/login', (req, res, next) => {
     }
   })(req, res, next);
 });
+
+router.get('/ldap_status', async (req, res, next) => {
+  await new LDAP().ldapServerStatus()
+      .then((client, message) => res.json({message: message}) )
+      .catch(err => err.status ? res.status(err.status).json(err.error) : next(err) );
+})
 
 /**
  * Verifica se ID no payload do JWT é valido

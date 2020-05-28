@@ -13,25 +13,32 @@ const ConsoleLog = require('../lib/ConsoleLog');
   usernameField: 'userName', // Caso queira pegar de dentro de um objeto "user[username]"
   passwordField: 'password'
 }, async (userName, password, callback) => {
-  const user = await new UserController().findOneUser(userName);
-    if(user !== null) {
-      if (user.userName === userName && user.validPassword(password)){
+    try{
+      const user = await new UserController().findOneUser(userName).catch(err => {throw err});
+
+      // Local user, DB
+      if (user !== null && user.userName === userName && user.validPassword(password)){
         new ConsoleLog('info').printConsole(`[PASSPORT] ${userName} - Logou no sistema`);
         return callback(null, user);
+      } 
+      
+      // Remote user - LDAP - AD
+      else if (user !== null && user.adUser !== null && user.adUser === userName && process.env.LDAP_SERVER !== '') {
+        await new LDAP().getUserAD(userName, password, userName)
+          .then(res => {
+            if (res.status !== undefined) { 
+              new ConsoleLog('info').printConsole(`[PASSPORT] ${userName} - Servidor LDAP retornou: ${res.message}`);
+              return callback(null, false, res);
+            }
+            new ConsoleLog('info').printConsole(`[PASSPORT] ${userName} - Logou no sistema via LDAP`);
+            return callback(null, user);
+          }).catch(err => { throw err; });
       }
-      if (user.adUser !== null && user.adUser === userName && process.env.LDAP_SERVER !== '') {
-        const ldap = new LDAP();
-        const response = await ldap.getUserAD(userName, password, userName);
-        
-        if (response.status > 400) { 
-          new ConsoleLog('warn').printConsole(`[PASSPORT] ${userName} - Servidor LDAP retornou credenciais erradas`);
-          return callback(null, false, { message: response.error.message });
-        }
-        new ConsoleLog('info').printConsole(`[PASSPORT] ${userName} - Logou no sistema via LDAP`);
-        return callback(null, user);
+  
+      else {
+        new ConsoleLog('warn').printConsole(`[PASSPORT] ${userName} - Digitou senha incorreta`);
+        return callback(null, false, { message: 'Usuário ou senha inválidos ou não é cadastrado no sistema.' });
       }
-    } 
-    new ConsoleLog('warn').printConsole(`[PASSPORT] ${userName} - Digitou senha incorreta`);
-    return callback(null, false, { message: 'Usuário ou senha inválidos ou não é cadastrado no sistema.' });
+    } catch (err) { return callback(err); }
   })
 );

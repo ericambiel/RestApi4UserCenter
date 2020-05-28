@@ -9,6 +9,7 @@ REST API que irá fornecer todos os dados necessário para o projeto UserCenter:
    - [x] Acesso validados por JWT.
    - [ ] Criar ***refresh JWT*** (AKA Session Token). Evita que usuário fique digitando a senha para recupera JWT
    - [x] Controle de acessos(leitura/escrita) aos End-Points.
+   - [x] Conexão LDAP a servidor Microsoft AD.
 
 ---
 
@@ -25,6 +26,6 @@ REST API que irá fornecer todos os dados necessário para o projeto UserCenter:
    
 ---
 
-- [ ] **Modulo - Impressão Patrimônio**
-   - [ ] Criação end Inserção/Modificação/Alteração/Exclusão.
-   - [ ] Impressão de etiquetas em impressora Zebra.
+- [x] **Modulo - Impressão Patrimônio**
+   - [x] Criação end Inserção/Modificação/Alteração/Exclusão.
+   - [x] Impressão de etiquetas em impressora Zebra.

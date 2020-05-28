@@ -13,6 +13,19 @@ class LDAP {
             new ConsoleLog('error').printConsole(`[LDAP] ${message}, em: ${stack}`);
         });
     }
+
+    /**
+     * Checa estado do servidor LDAP.
+     * @returns {ldap} Cliente de conexão.
+     */
+    async ldapServerStatus() {
+        return await createLDAPClient(process.env.LDAP_SERVER, process.env.LDAP_PORT)
+            .then(client => { return  { message: 'Servidor LDAP pronto para conexão.', client } })
+            .catch(err => { 
+                throw errorHandling(err);
+            });
+    }
+
     /**
      * Obtém via LDAP informações de todos os usuários ou usuário informado de um servidor AD Microsoft.
      * @param {string} user Se usuário não informado usara credenciais de LDAP em env.
@@ -52,8 +65,8 @@ class LDAP {
             );
         } catch(err) { 
             const handling = errorHandling(err);
-            if(handling !== false) return { error: { message: handling }, status: 401 };
-            else throw Error(err.message);
+            if(handling.status < 500) return handling;
+            else throw handling;
         }
     }
 }
@@ -108,13 +121,18 @@ function searchPromise(search) {
     });
   }
 
+/**
+ * Cria cliente de conexão a um servidor LDAP.
+ * @param {string} ldapServer IP/Hostname do servidor.
+ * @param {string} ldapPort Porta onde serviço LDAP esta rodando no servidor.
+ * @returns {ldapjs} Cliente de conexão.
+ */
 function createLDAPClient(ldapServer, ldapPort){
     return new Promise((resolve, reject) => {
         const client = ldapjs.createClient({
-            // url: `${process.env.LDAP_SERVER}:${process.env.LDAP_PORT}/cn=${user}, ou=users, ${process.env.LDAP_START_POINT}`,
             url: ldapServer !== '' ? `${ldapServer}:${ldapPort}/` : '',
-            timeout: 5000,
-            connectTimeout: 10000
+            timeout: 2500,
+            connectTimeout: 5000
         }).on("connect", res => {
             resolve({ client, res });
         }).on('connectError',err => {
@@ -128,8 +146,11 @@ function createLDAPClient(ldapServer, ldapPort){
 }
 
 /**
- * 
- * @param {ldapjs.createClient} client 
+ * Conecta a uma base DN usando um cliente de conexão.
+ * Caso 'user' e 'password' não forem inseridos tentara conexão anonima. 
+ * @param {ldapjs.createClient} client cliente de conexão.
+ * @param {string} user usuário de conexão LDAP
+ * @param {string} password senha de conexão
  */
 function connectLDAPClient(client, user, password) {
     return new Promise((resolve, reject) => {
@@ -141,7 +162,7 @@ function connectLDAPClient(client, user, password) {
 }
 
 /**
- * 
+ * Desconecta cliente da base LDAP
  * @param {ldapjs.createClient} client 
  */
 function disconnectLDAPClient(client) {
@@ -157,33 +178,36 @@ function disconnectLDAPClient(client) {
 // https://docs.servicenow.com/bundle/orlando-platform-administration/page/administer/reference-pages/reference/r_LDAPErrorCodes.html
 // https://ldapwiki.com/wiki/Common%20Active%20Directory%20Bind%20Errors
 /**
- * 
- * @param {Error} error 
+ * Tratara erros que ocorram durante conexão ao servidor LDAP.
+ * @param {Error} err erro de conexão vindos de um cliente LDAP.
  */
-function errorHandling(error) {
-    const indexOf = error.message.search(/(?<=data )([^\n\r]*)/); // Encontra tudo após "data "
-    let hexError = error.message.substr(indexOf);
-    hexError = hexError.replace(/,.*$/, '').toLowerCase(); // remove tudo após primeira ","
+function errorHandling(err) {
     
-    switch (!error.code ? '' : error.code) {
+    // hexErrorMicrosoftAD - Erros somente do Microsoft AD
+    const indexOf = err.message.search(/(?<=data )([^\n\r]*)/); // Encontra tudo após "data "
+    let hexErrorMicrosoftAD = err.message.substr(indexOf);
+    hexErrorMicrosoftAD = hexErrorMicrosoftAD.replace(/,.*$/, '').toLowerCase(); // remove tudo após primeira ","
+    
+    switch (!err.code ? '' : err.code) {
         case 49: { // LDAP_INVALID_CREDENTIALS
-            switch (!hexError ? '' : hexError){ // Microsoft AD Errors.
-                case '525': return 'Entrada no diretório AD não existe.'; // LDAP_NO_SUCH_OBJECT
-                case '52e': return 'Usuário ou senha Windows inválidos.'; // ERROR_LOGON_FAILURE
-                case '52f': return 'Existe restrições em seu usuário, contate o administrador.'; //ERROR_ACCOUNT_RESTRICTION
-                case '530': return 'Acesso pelo seu usuário não permitido nesse horário.'; //ERROR_INVALID_LOGON_HOURS
-                case '531': return 'Não é permitido logar-se desse computador'; // ERROR_INVALID_WORKSTATION
-                case '532': return 'Sua senha do Windows expirou por favor redefina'; // ERROR_PASSWORD_EXPIRED
-                case '533': return 'Sua conta Windows esta desabilitada, contate o administrador'; // ERROR_ACCOUNT_DISABLED
-                case '568': return 'Muitas seções de sua conta aberta, feche algumas'; // ERROR_TOO_MANY_CONTEXT_IDS
-                case '701': return 'Seu usuário do Windows expirou, contate o administrador'; // ERROR_ACCOUNT_EXPIRED
-                case '773': return 'Sua senha Windows precisa ser redefinida, altere e tente novamente'; // ERROR_PASSWORD_MUST_CHANGE
-                case '775': return 'Seu usuário Windows esta bloqueado, contate o administrador'; // ERROR_ACCOUNT_LOCKED_OUT
-                case '80090346': return 'Credenciais estão incorretas, tente novamente'; // ERROR_ACCOUNT_LOCKED_OUT
-                default: return 'Erro com suas credenciais';
+            switch (!hexErrorMicrosoftAD ? '' : hexErrorMicrosoftAD){ // Microsoft AD Errors.
+                case '525': return { error: {message: 'Entrada no diretório AD não existe.' }, status: 401 }; // LDAP_NO_SUCH_OBJECT
+                case '52e': return { error: {message: 'Usuário ou senha Windows inválidos.' }, status: 401 }; // ERROR_LOGON_FAILURE
+                case '52f': return { error: {message: 'Existe restrições em seu usuário, contate o administrador.' }, status: 401 }; // ERROR_ACCOUNT_RESTRICTION
+                case '530': return { error: {message: 'Acesso pelo seu usuário não permitido nesse horário.' }, status: 401 }; // ERROR_INVALID_LOGON_HOURS
+                case '531': return { error: {message: 'Não é permitido logar-se desse computador' }, status: 401 }; // ERROR_INVALID_WORKSTATION
+                case '532': return { error: {message: 'Sua senha do Windows expirou por favor redefina' }, status: 401 }; // ERROR_PASSWORD_EXPIRED
+                case '533': return { error: {message: 'Sua conta Windows esta desabilitada, contate o administrador' }, status: 401 }; // ERROR_ACCOUNT_DISABLED
+                case '568': return { error: {message: 'Muitas seções de sua conta aberta, feche algumas' }, status: 401 }; // ERROR_TOO_MANY_CONTEXT_IDS
+                case '701': return { error: {message: 'Seu usuário do Windows expirou, contate o administrador' }, status: 401 }; // ERROR_ACCOUNT_EXPIRED
+                case '773': return { error: {message: 'Sua senha Windows precisa ser redefinida, altere e tente novamente' }, status: 401 }; // ERROR_PASSWORD_MUST_CHANGE
+                case '775': return { error: {message: 'Seu usuário Windows esta bloqueado, contate o administrador' }, status: 401 }; // ERROR_ACCOUNT_LOCKED_OUT
+                case '80090346': return { error: {message: 'Credenciais estão incorretas, tente novamente' }, status: 401 }; // ERROR_ACCOUNT_LOCKED_OUT
+                default: return { error: {message: 'Erro com suas credenciais'}, status: 401 };
             }
         }
-        default: return false; // error not Handling
+        case 80: return { error: {message: 'Erro ao se conectar com servidor LDAP, contate o administrador.' }, status: 504 }; // LDAP_OTHER
+        default: return err; // error not Handling
     }
 }
 
