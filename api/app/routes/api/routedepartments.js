@@ -12,7 +12,7 @@ const permissionModule = require('../../../config/PermissionModule'); // Tipos d
 router.get(
     '/',
     auth.required,
-    routePermission.check( [ [permissionModule.DEPARTMENT.select],[permissionModule.ROOT.select] ] ),
+    routePermission.check(permissionModule.DEPARTMENT.select),
     (req, res, next) => {
         Department.find().populate(['departResponsible'])
             .then(departments => res.json(departments))
@@ -26,7 +26,7 @@ router.get(
 router.get(
     '/:id',
     auth.required,
-    routePermission.check( [ [permissionModule.DEPARTMENT.select],[permissionModule.ROOT.select] ] ),
+    routePermission.check(permissionModule.DEPARTMENT.select),
     (req, res, next) => {
         const { id } = req.params;
         Department.findById(id).populate(['departResponsible'])
@@ -45,7 +45,7 @@ router.get(
 router.delete(
     '/:id',
     auth.required,
-    routePermission.check( [ [permissionModule.DEPARTMENT.delete],[permissionModule.ROOT.delete] ] ),
+    routePermission.check(permissionModule.DEPARTMENT.delete),
     (req, res, next) => {
         const { id } = req.params;
     
@@ -70,7 +70,7 @@ router.delete(
 router.post(
         '/', // Rota
         auth.required, // Validação JWT
-        routePermission.check( [ [permissionModule.DEPARTMENT.insert],[permissionModule.ROOT.insert] ] ), // Permissão de acesso a rota 
+        routePermission.check(permissionModule.DEPARTMENT.insert), // Permissão de acesso a rota 
         async (req, res, next) => {
             try{
                 const { description, departResponsible } = req.body.department;
@@ -116,7 +116,7 @@ router.post(
 router.patch(
     '/:id', 
     auth.required, 
-    routePermission.check([ [permissionModule.DEPARTMENT.update],[permissionModule.ROOT.update] ]), 
+    routePermission.check(permissionModule.DEPARTMENT.update), 
     async (req, res, next) => {
         const { id } = req.params;
         const reqDepartResponsible = req.body.department.departResponsible;

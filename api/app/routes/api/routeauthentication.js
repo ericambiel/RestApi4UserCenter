@@ -30,7 +30,7 @@ router.post('/login', (req, res, next) => {
       // user.token = user.generateJWT();
       return res.json({user: await user.toAuthJSON()});
     } else {
-      return res.status(401).json(info);
+      return res.status(401).json(info.error);
     }
   })(req, res, next);
 });

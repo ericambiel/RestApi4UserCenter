@@ -9,7 +9,7 @@ REST API que irá fornecer todos os dados necessário para o projeto UserCenter:
    - [x] Acesso validados por JWT.
    - [ ] Criar ***refresh JWT*** (AKA Session Token). Evita que usuário fique digitando a senha para recupera JWT
    - [x] Controle de acessos(leitura/escrita) aos End-Points.
-   - [x] Conexão LDAP a servidor Microsoft AD.
+   - [x] Conexão LDAP a servidor Microsoft AD. ***Testando***
 
 ---
 

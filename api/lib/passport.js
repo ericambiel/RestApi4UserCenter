@@ -37,7 +37,7 @@ const ConsoleLog = require('../lib/ConsoleLog');
   
       else {
         new ConsoleLog('warn').printConsole(`[PASSPORT] ${userName} - Digitou senha incorreta`);
-        return callback(null, false, { message: 'Usuário ou senha inválidos ou não é cadastrado no sistema.' });
+        return callback(null, false, { error: {message: 'Usuário ou senha inválidos ou não é cadastrado no sistema.' } });
       }
     } catch (err) { return callback(err); }
   })
