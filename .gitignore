@@ -109,3 +109,4 @@ public/files
 api/restapi4usercenter.*
 .history
 restapi4usercenter.exe
+api/app/test/mocks/LDAPUsers.js

@@ -1,3 +1,4 @@
+const Binary = require('binary');
 const ldapjs = require('ldapjs');
 var Promise = require('bluebird');
 
@@ -57,7 +58,18 @@ class LDAP {
                     return searchPromise(search);
                 }).then(entries => {
                     disconnectLDAPClient(client);
-                    return entries.objects;
+                    
+                    const users = [];
+                    for (let i = 0; i < entries.length; i++) {
+                        const foundAttributes = findAttributes(['objectGUID', 'objectSid'], entries[i].attributes);
+                        
+                        users.push(entries[i].object);
+                        
+                        users[i].objectGUID = formatToUUID(binToHex(foundAttributes).get('objectGUID').toString());
+                        users[i].objectSid = decodeSIDFromBin(foundAttributes.get('objectSid').buffers).toString();
+                    }
+
+                    return users;
                 }).catch(err => {
                     disconnectLDAPClient(client);
                     throw err;
@@ -88,6 +100,108 @@ function informedUserOrNot(user, password, callback) {
 }
 
 /**
+ * Encontra atributos em uma lista
+ * @param {Array<string>} attributesNames Atributos a encontrar.
+ * @returns {Array} attFound.
+ */
+function findAttributes(attributesNames, attributesArray) {
+    const attFound = new Map();
+
+    attributesNames.forEach(name => {
+        attFound.set(name, attributesArray.find(attr => attr.type === name));
+    });
+
+    return attFound;
+}
+
+/**
+ * Procura e transforma atributos que estão em BIN para HEX
+ * @param { Map<string, Buffer> } attributes Atributos binários para conversão.
+ * @returns { Map<string, string> } Array com valores em hex da lista de atributos informada. 
+ */
+function binToHex(attributes) {
+    const hexMap = new Map;
+
+    for (const [key, value] of attributes.entries()) {
+        hexMap.set(key, value.buffers.map(
+            buffer => { return Buffer.from(buffer, 'binary').toString('hex'); })
+        );
+    }
+
+    return hexMap;
+}
+
+/**
+ * Formata atributos HEX para UUID.
+ * @param {string} hexAttribute objectGUID em formato Hex.
+ * @returns {string} Retorna objectGUI formatado para UUID.
+ */
+function formatToUUID(hexAttribute) {
+    const p1 =
+        hexAttribute.substr(-26, 2) +
+        hexAttribute.substr(-28, 2) +
+        hexAttribute.substr(-30, 2) +
+        hexAttribute.substr(-32, 2);
+
+    const p2 = hexAttribute.substr(-22, 2) + hexAttribute.substr(-24, 2);
+    const p3 = hexAttribute.substr(-18, 2) + hexAttribute.substr(-20, 2);
+    const p4 = hexAttribute.substr(-16, 4);
+    const p5 = hexAttribute.substr(-12, 12);
+
+    return [p1, p2, p3, p4, p5].join('-');
+}
+
+/**
+ * Descobre qual o tipo de SID
+ * @param {Buffer} type Tipo em binário.
+ */
+function outputSIDType(type) {
+    const buf = new Buffer.alloc(6);
+    type.copy(buf, 0);
+    let output = 0;
+
+    for (let i = 0; i < 6; i++) {
+        output = output << 8;
+        output = output | buf[i];
+    }
+
+    return output;
+}
+
+/**
+ * Decodifica binário SID para string formatado.
+ * @param {Array<Buffer>} sIDBuffer Array dos Buffers com SID do AD, geralmente 1.
+ * @returns {Array<string>} Array SID no formato "S-{Revision}-{Authority}-{SubAuthority1}-...-{SubAuthorityN}"
+ */
+function decodeSIDFromBin(sIDBuffer) {
+    const parsers = sIDBuffer.map(buffer =>
+        Binary.parse(buffer)
+            .word8lu('revision')
+            .word8lu('fields')
+            .buffer('authority', 6)
+            .loop(function(end, vars) {
+            vars.subAuthorities = vars.subAuthorities || new Array();
+            vars.subAuthorities.push(this.word32lu('subAuthority').vars.subAuthority);
+            if (vars.subAuthorities.length >= vars.fields) {
+                end();
+            }
+        })
+    );
+    
+    return parsers.map(parse => {
+        const revision = parse.vars.revision;
+        const authority = parse.vars.authority;
+        const subAuthorities = parse.vars.subAuthorities;
+    
+        // return { version, type, domsid };
+    
+        /* return S-{Revision}-{Authority}-{SubAuthority1}-{SubAuthority2}...-{SubAuthorityN} formatted string */
+        const output = ['S', revision, outputSIDType(authority)].concat(subAuthorities);
+        return output.join('-');
+    })
+}
+
+/**
  * Procura por entradas em uma base LDAP
  * @param {ldapjs} search Resultado de procura. 
  */
@@ -96,12 +210,12 @@ function searchPromise(search) {
         let found = false;
         let referrals = [];
         let entries = [];
-        entries.objects = [];
+        // entries.objects = [];
         
         search.on('searchEntry', entry => {
             found = true;
             entries.push(entry)
-            entries.objects.push(entry.object);
+            // entries.objects.push(entry.object);
         });
 
         search.on('searchReference', referral => {
@@ -212,6 +326,3 @@ function errorHandling(err) {
 }
 
 module.exports = LDAP;
-
-
-

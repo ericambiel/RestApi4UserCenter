@@ -7,7 +7,7 @@ const routePermission = require('../../middlewares/PermissionRoutes'); // Suport
 const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
 const LDAP = require('../../../lib/LDAP');
-// const MockUsersAD = require('../../mock/LDAPUsers');
+// const MockUsersAD = require('../../test/mocks/LDAPUsers');
 
 /**
  * Compara valores de dois arrays e retorna valores
@@ -23,17 +23,24 @@ function missingInArray(previousArray, currentArray){
   }
 }
 
+/**
+ * Retorna usuários do Microsoft AD em um server LDAP.
+ */
 router.get(
-  '/ldap', 
+  '/ldap_ad_users', 
   auth.required, 
   routePermission.check(permissionModule.RH.select), 
-  (req, res, next) => {
-    // res.json(new MockUsersAD().usersADString); 
-    res.json(new LDAP().getUserAD());
+  async(req, res, next) => {
+    try {
+      // res.json(new MockUsersAD().usersADString); 
+      res.json(await new LDAP().getUserAD().catch(err => { throw err } ));
+    } catch(err) { next(err); }
   }
 )
 
-/* Listar todos os Usuário */
+/**
+ * Listar todos os Usuário
+ */
 router.get(
   '/', 
   auth.required, 
@@ -46,7 +53,9 @@ router.get(
     .catch(next)
   });
 
-  /* Listar usuário (Ele mesmo) */
+/**
+ * Listar usuário (Ele mesmo)
+ */
 router.get(
   '/myself', 
   auth.required, 
