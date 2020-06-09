@@ -41,9 +41,9 @@ class ContractController {
       const firstParamAnd = { $nin: ['Expirado', 'Encerrado', 'Descontinuado'] }; // que NÃO possuam OS valoreS. Para caso não exista o objeto no documento
       const secondParamAnd = { dataFim: { $lte: new Date() } }; // diaAntecedencia >= 1, dataFim != null, dataFim > dataAgora
       const thirdParamAnd = `$logEmail.${fieldToLog}`; // Nome do campo em um array a ser procurado
-      const firstParamProject = new Date(); // Dia que email sera enviado 
+      const firstParamOr = new Date(); // Dia que email sera enviado 
     
-      return await coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject, fieldToLog)
+      return await coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr, fieldToLog);
 
     } catch (err) { throw new Error(err.message); }
   }
@@ -62,9 +62,9 @@ class ContractController {
       const firstParamAnd = { $nin: ['Expirado', 'Encerrado', 'Descontinuado'] }; // que NÃO possuam OS valoreS. Para caso não exista o objeto no documento
       const secondParamAnd = { diaAntecedencia: { $gte: 1 }, dataFim: { $eq: null } }; // diaAntecedencia >= 1, dataFim = null
       const thirdParamAnd = `$logEmail.${fieldToLog}`; // Nome do campo em um array a ser procurado
-      const firstParamProject = { $add: [ '$dataInicio', { $subtract: [ yearInMillisecond, { $multiply: [ '$diaAntecedencia', 86400000 ] } ] } ] }; // Dia que email sera enviado 
+      const firstParamOr = { $add: [ '$dataInicio', { $subtract: [ yearInMillisecond, { $multiply: [ '$diaAntecedencia', 86400000 ] } ] } ] }; // Dia que email sera enviado 
       
-      return await coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject, fieldToLog)
+      return await coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr, fieldToLog);
     }catch(err){ throw new Error(err.message); }
   }
 
@@ -75,16 +75,65 @@ class ContractController {
    */
   async expiringContracts() {
     try{
-      const fieldToLog = 'expiringEmailSent'; // Campo para inserir estado do envio de email
+      const fieldToLog = 'expiringEmailSent'; // Campo para inserir estado do envio de email | Templete Email
       
       const firstParamAnd = { $nin: ['Encerrado', 'Descontinuado'] }; // que NÃO possuam OS valoreS. Para caso não exista o objeto no documento
       const secondParamAnd = { diaAntecedencia: { $gte: 1 }, dataFim: { $gt: new Date() } }; // diaAntecedencia >= 1, dataFim != null, dataFim > dataAgora
       const thirdParamAnd = `$logEmail.${fieldToLog}`; // Nome do campo em um array a ser procurado
-      const firstParamProject = { $subtract: [ '$dataFim', { $multiply: [ '$diaAntecedencia', 86400000 ] } ] }; // Dia que email sera enviado 
-    
-      return await coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject, fieldToLog)
+      const firstParamOr = { $subtract: [ '$dataFim', { $multiply: [ '$diaAntecedencia', 86400000 ] } ] }; // Dia que email sera enviado 
+      
+      await findRegularlyContracts(thirdParamAnd);
+
+      return await coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr, fieldToLog);
     }catch(err){ throw new Error(err.message); }
   }
+}
+
+/**
+ * Busca contratos onde algum email de Alerta já foi enviado
+ * antes, e começa enviar emails regulares, 
+ * desde que sendEmailRegularly >= 1.
+ * @param {boolean} fieldToCompare Campo que informa se  
+ * primeiro email já foi enviado para contrato.
+ */
+async function findRegularlyContracts(fieldToCompare) {
+  try{
+    const fieldToLog = 'expiringEmailSentRegularly'; // Campo para inserir estado do envio de email | Templete Email
+    
+    const firstParamAnd = { $nin: ['Encerrado', 'Descontinuado'] }; // que NÃO possuam OS valoreS. Para caso não exista o objeto no documento
+    const secondParamAnd = 
+      { dataFim: { $gt: new Date() }, // dataFim > dataAgora
+        'options.sendEmailRegularly': { $gte: 1 }, // sendEmailRegularly > 1
+        $expr: { $eq: [ { $arrayElemAt: [ fieldToCompare , -1] }, true ] } }; // expiringEmailSentRegularly == true        
+      // $expr: {
+      //     $or: [ // expiringEmailSentRegularly == true || expiringEmailSentRegularly == true
+      //       { $eq: [ { $arrayElemAt: [ fieldToCompare , -1] }, true ] }, // expiringEmailSentRegularly == true
+      //       { $eq: [ { $arrayElemAt: [ `$logEmail.${fieldToLog}` , -1] }, true] } // expiringEmailSentRegularly == true
+      //     ] 
+      //   }  
+    const firstParamOr = 
+      { $add: [                             // Incrementa um valor ao outro.
+        // Retorna ultimo "createdAt" onde expiringEmailSent == true || expiringEmailSent == true 
+        { $let: {                           // Cria variável temporária
+            vars: {                     // Bloco de variáveis a serem criadas
+                filtered: {             // Nome variável temporária.
+                  $filter: {            // Filtra valores encontrados.
+                    input: '$logEmail', // Array a realizar a procura.
+                    as: 'logEmail',     // Apelido do array.
+                    cond: {             // Condição para aplicar filtro.
+                      $or: [ 
+                        { $eq: [ `$$logEmail.${fieldToLog}`, true ] }, // logEmail.expiringEmailSentRegularly == true
+                        { $eq: [ `$${fieldToCompare}`, true ] } // logEmail.expiringEmailSent == true
+                    ] } } } },
+            in: { 
+              $arrayElemAt: [ "$$filtered.createdAt", -1 ] } // Retorna ultimo valor encontrado
+          } 
+        },
+        { $multiply: [ '$options.sendEmailRegularly', 86400000 ] } ]
+      }; // Retorna dia que email sera enviado 
+
+    return await coreSendEmail(firstParamAnd, secondParamAnd, null, firstParamOr, fieldToLog);
+  } catch(err) { throw new Error(err.message); }
 }
 
 /**
@@ -125,7 +174,7 @@ function sendMailContract(contrato, identifier) {
   };
   return mail.sendMail({
       to: `${user.name} <${user.email}>`,
-      subject: `Alerta de ${identifier.subject}`,
+      subject: `${identifier.subject}, ID: ${contrato.id}`,
       template: identifier.template,
       context: {
         //user: user.name,
@@ -140,7 +189,9 @@ function sendMailContract(contrato, identifier) {
             ? moment(contrato.dataFim).format('DD/MM/YYYY') 
             : 'Contrato com data indeterminado',
         status: contrato.status,
-        diaAntecedencia : contrato.diaAntecedencia
+        diaAntecedencia: contrato.diaAntecedencia,
+        sendEmailRegularly: contrato.options.sendEmailRegularly,
+        dateSendNextEmail: moment().add(contrato.options.sendEmailRegularly, 'd').format('DD/MM/YYYY')
       }
     })
     .then(infoMail => { 
@@ -153,18 +204,20 @@ function sendMailContract(contrato, identifier) {
  * @param {*} firstParamAnd 1º parâmetro AND da query
  * @param {*} secondParamAnd 2º parâmetro AND da query
  * @param {*} thirdParamAnd 3º parâmetro AND da query
- * @param {*} firstParamProject 1º parâmetro OR da query
+ * @param {*} firstParamOr 1º parâmetro OR da query
  */
-async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject ) {
+async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr ) {
   return await Contrato.aggregate(
     [
       { $match: {
           $or: [ // Encontra documentos que contemplem um ou outro requisito
+        // Encontra contratos para emails que falharam no envio. //
             { $expr: // Iniciar expressão
               { $eq: // ===
                 [ { $arrayElemAt: // No array 
                   [ thirdParamAnd , -1] }, false] } 
             }, // Ultimo do array que seja = false
+        // Encontra novos contratos para enviar emails. //
             { $and: [ // Encontre documentos que contemplem todos os requisitos
                 { 'options.sendEmailAlerts': { $ne: false } }, // que NÂO possua O valor. Para caso não exista o objeto no documento
                 { status: firstParamAnd }, 
@@ -172,19 +225,19 @@ async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, 
                 { $expr: // Iniciar expressão
                   { $ne: // ==!
                     [ { $arrayElemAt: // No array 
-                      [ thirdParamAnd , -1] }, true] } 
-                }, // Ultimo do array que seja = true
+                      [ thirdParamAnd , -1] }, true] } // Ultimo do array que seja = true
+                }, 
               ] 
             },
           ]
         }
       },
       { $addFields: { // Add o campo no select
-          dateToSendEmail: firstParamProject,
+          dateToSendEmail: firstParamOr,
         }
       },
       { $sort: { dateToSendEmail: 1 } }, // Em ordem crescente
-      { $match: { dateToSendEmail: { $lte: new Date() } } }, // Filtra contratos que serão enviado hoje
+      { $match: { dateToSendEmail: { $lte: new Date() } } }, // Filtra contratos que serão enviado hoje ou que não foram enviados
     ]
   )
   // Object JavaScript para Mongoose model, para gerar campos virtuais.
@@ -230,15 +283,19 @@ function selectTemplate(identifier){
   switch (identifier) {
     case 'expiringEmailSent':
       options.template = 'expiring_contract';
-      options.subject = 'Contrato à Vencer';
+      options.subject = 'Alerta de Contrato à Vencer';
+      return options;
+    case 'expiringEmailSentRegularly':
+      options.template = 'regularly_contract';
+      options.subject = 'Aviso regular de contrato';
       return options;
     case 'indeterminateEmailSent':
       options.template = 'indeterminate_contract';
-      options.subject = 'Contrato Indeterminado';
+      options.subject = 'Alerta de Contrato Indeterminado';
       return options;
     case 'expiredEmailSent':
       options.template = 'expired_contract';
-      options.subject = 'Contrato Expirado';
+      options.subject = 'Alerta de Contrato Expirado';
       return options;
     default:
       new ConsoleLog('error').printConsole('Templete para email não encontrado');
@@ -252,13 +309,13 @@ function selectTemplate(identifier){
  * @param {*} firstParamAnd Campo contendo primeiro nível de procura AND
  * @param {*} secondParamAnd Campo contendo segundo nível de procura AND
  * @param {*} thirdParamAnd Campo contendo terceiro nível de procura AND
- * @param {*} firstParamProject Compo para filtrar valores encontrados.
+ * @param {*} firstParamOr Compo para filtrar sobre valores encontrados.
  * @param {String} fieldToLog Campo para inserir estado do envio de email, também usado para definir templete.
  */
-async function coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject, fieldToLog) {
-  return await findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamProject)
+async function coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr, fieldToLog) {
+  return await findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr)
     .then(async (contratos) => {
-      // return contratos;
+      // return contratos; // Debug, volta contratos ao endpoint.
       return await Promise.all(contratos.map(async (contrato) => {
         return await sendMailContract(contrato, selectTemplate(fieldToLog))
           /* Registra contratos enviados. */
