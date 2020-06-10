@@ -9,7 +9,7 @@ const Documento = require('./documento');
  */
 const OptionsSchema = new Schema({
     sendEmailAlerts: { type: Boolean, default: true },
-    sendEmailRegularly: { type: Number, default: 30 }
+    regularitySendMail: { type: Number, default: 30 }
 },{ _id : false });
 
 /**
@@ -18,7 +18,7 @@ const OptionsSchema = new Schema({
 const LogEmailSchema = new Schema({
     expiredEmailSent: { type: Boolean },            // Contrato vencido enviado
     expiringEmailSent: { type: Boolean },           // Contrato pra vencer
-    expiringEmailSentRegularly: { type: Boolean },  // Contratos pra vencer e que são enviados regularmente
+    regularlyEmailSent: { type: Boolean },          // Email regular enviado após algum email de ALERTA
     indeterminateEmailSent: { type: Boolean },      // Contrato indeterminado
     message: {type: String}
 },{ timestamps: { updatedAt: false } , _id : false });

@@ -92,29 +92,23 @@ class ContractController {
 /**
  * Busca contratos onde algum email de Alerta já foi enviado
  * antes, e começa enviar emails regulares, 
- * desde que sendEmailRegularly >= 1.
+ * desde que regularitySendMail >= 1.
  * @param {boolean} fieldToCompare Campo que informa se  
  * primeiro email já foi enviado para contrato.
  */
 async function findRegularlyContracts(fieldToCompare) {
   try{
-    const fieldToLog = 'expiringEmailSentRegularly'; // Campo para inserir estado do envio de email | Templete Email
+    const fieldToLog = 'regularlyEmailSent'; // Campo para inserir estado do envio de email | Templete Email
     
     const firstParamAnd = { $nin: ['Encerrado', 'Descontinuado'] }; // que NÃO possuam OS valoreS. Para caso não exista o objeto no documento
     const secondParamAnd = 
       { dataFim: { $gt: new Date() }, // dataFim > dataAgora
-        'options.sendEmailRegularly': { $gte: 1 }, // sendEmailRegularly > 1
-        $expr: { $eq: [ { $arrayElemAt: [ fieldToCompare , -1] }, true ] } }; // expiringEmailSentRegularly == true        
-      // $expr: {
-      //     $or: [ // expiringEmailSentRegularly == true || expiringEmailSentRegularly == true
-      //       { $eq: [ { $arrayElemAt: [ fieldToCompare , -1] }, true ] }, // expiringEmailSentRegularly == true
-      //       { $eq: [ { $arrayElemAt: [ `$logEmail.${fieldToLog}` , -1] }, true] } // expiringEmailSentRegularly == true
-      //     ] 
-      //   }  
+        'options.regularitySendMail': { $ne: 0 }, // regularitySendMail != 0
+        $expr: { $eq: [ { $arrayElemAt: [ fieldToCompare , -1] }, true ] } }; // fieldToCompare == true        
     const firstParamOr = 
-      { $add: [                             // Incrementa um valor ao outro.
+      { $add: [                         // Incrementa um valor ao outro.
         // Retorna ultimo "createdAt" onde expiringEmailSent == true || expiringEmailSent == true 
-        { $let: {                           // Cria variável temporária
+        { $let: {                       // Cria variável temporária
             vars: {                     // Bloco de variáveis a serem criadas
                 filtered: {             // Nome variável temporária.
                   $filter: {            // Filtra valores encontrados.
@@ -122,14 +116,14 @@ async function findRegularlyContracts(fieldToCompare) {
                     as: 'logEmail',     // Apelido do array.
                     cond: {             // Condição para aplicar filtro.
                       $or: [ 
-                        { $eq: [ `$$logEmail.${fieldToLog}`, true ] }, // logEmail.expiringEmailSentRegularly == true
+                        { $eq: [ `$$logEmail.${fieldToLog}`, true ] }, // logEmail.regularlyEmailSent == true
                         { $eq: [ `$${fieldToCompare}`, true ] } // logEmail.expiringEmailSent == true
                     ] } } } },
             in: { 
               $arrayElemAt: [ "$$filtered.createdAt", -1 ] } // Retorna ultimo valor encontrado
           } 
         },
-        { $multiply: [ '$options.sendEmailRegularly', 86400000 ] } ]
+        { $multiply: [ '$options.regularitySendMail' , 86400000 ] } ] // '$options.regularitySendMail'
       }; // Retorna dia que email sera enviado 
 
     return await coreSendEmail(firstParamAnd, secondParamAnd, null, firstParamOr, fieldToLog);
@@ -190,8 +184,8 @@ function sendMailContract(contrato, identifier) {
             : 'Contrato com data indeterminado',
         status: contrato.status,
         diaAntecedencia: contrato.diaAntecedencia,
-        sendEmailRegularly: contrato.options.sendEmailRegularly,
-        dateSendNextEmail: moment().add(contrato.options.sendEmailRegularly, 'd').format('DD/MM/YYYY')
+        regularitySendMail: contrato.options.regularitySendMail,
+        dateSendNextEmail: moment().add(contrato.options.regularitySendMail, 'd').format('DD/MM/YYYY')
       }
     })
     .then(infoMail => { 
@@ -200,13 +194,14 @@ function sendMailContract(contrato, identifier) {
 }
 
 /**
- * Encontra contratos que serão enviados e-mails.
+ * Corpo padrão de uma Agregação, usado para pesquisar
+ * contratos para envio de E-Mails.
  * @param {*} firstParamAnd 1º parâmetro AND da query
  * @param {*} secondParamAnd 2º parâmetro AND da query
  * @param {*} thirdParamAnd 3º parâmetro AND da query
  * @param {*} firstParamOr 1º parâmetro OR da query
  */
-async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr ) {
+async function aggregationQueryBody(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr ) {
   return await Contrato.aggregate(
     [
       { $match: {
@@ -237,7 +232,7 @@ async function findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, 
         }
       },
       { $sort: { dateToSendEmail: 1 } }, // Em ordem crescente
-      { $match: { dateToSendEmail: { $lte: new Date() } } }, // Filtra contratos que serão enviado hoje ou que não foram enviados
+      { $match: { dateToSendEmail: { $lte: moment().endOf('day').toDate() } } }, // Filtra contratos que serão enviado hoje ou que não foram enviados
     ]
   )
   // Object JavaScript para Mongoose model, para gerar campos virtuais.
@@ -285,7 +280,7 @@ function selectTemplate(identifier){
       options.template = 'expiring_contract';
       options.subject = 'Alerta de Contrato à Vencer';
       return options;
-    case 'expiringEmailSentRegularly':
+    case 'regularlyEmailSent':
       options.template = 'regularly_contract';
       options.subject = 'Aviso regular de contrato';
       return options;
@@ -313,9 +308,9 @@ function selectTemplate(identifier){
  * @param {String} fieldToLog Campo para inserir estado do envio de email, também usado para definir templete.
  */
 async function coreSendEmail(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr, fieldToLog) {
-  return await findAlertContracts(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr)
+  return await aggregationQueryBody(firstParamAnd, secondParamAnd, thirdParamAnd, firstParamOr)
     .then(async (contratos) => {
-      // return contratos; // Debug, volta contratos ao endpoint.
+      // return contratos; // Debug, retorna contratos ao endpoint.
       return await Promise.all(contratos.map(async (contrato) => {
         return await sendMailContract(contrato, selectTemplate(fieldToLog))
           /* Registra contratos enviados. */

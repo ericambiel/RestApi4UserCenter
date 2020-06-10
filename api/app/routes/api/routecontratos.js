@@ -20,6 +20,35 @@ const Contrato = require('../../schemas/contrato');
 //     .catch(error => res.send(error))
 //   });
 
+/**
+ * Atualiza todos os contratos com os valores "Default" do "Schema"
+ * caso esses não tenham os objetos definidos no documento.
+ */
+router.get(
+  '/update_documents_schema',
+  auth.required, 
+  routePermission.check( [permissionModule.ROOT.update] ), 
+  async(req, res, next) => {
+    try{
+      await Contrato.updateMany({}, { $set: { options: { regularitySendMail: 30 } } })
+        .then(contratos => res.json(contratos))
+        .catch(err => {throw err});
+      // await Contrato.find().lean()
+      //   .then(async contratos => {  
+      //     return await Promise.all(
+      //       contratos.map(
+      //         async contrato => {
+      //           return await Contrato.findByIdAndUpdate(
+      //               contrato._id, 
+      //               contrato, 
+      //               { upsert: true, setDefaultsOnInsert: true, new: true })
+      //             .catch(err => { throw err; });
+      //         }) ); })
+      //   .then(contratos => res.json(contratos))
+      //   .catch(err => {throw err});
+    }catch(err) { next(err); }
+});
+
 /** 
  * Lista contratos filtrando pelo departamento do usuário. 
  * Caso for do departamento "Controladoria" exibe todos, caso contrario e 
