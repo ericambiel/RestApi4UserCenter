@@ -81,14 +81,16 @@ const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
 UserSchema.virtual('imResponsibleFor').get(function() {
   // TODO Verificar controler contrato e usar essa logica ao invés do método defino lá
   let imResponsibleFor = [];
-
-  this.departments.forEach(department => {
-    department.departResponsible.forEach(responsible => {
-      if(typeof responsible !== undefined && responsible._id.toString() === this._id.toString()){
-        imResponsibleFor.push(department.description);
-      }
+  
+  if (typeof department !== 'undefined')
+    this.departments.forEach(department => {
+        if (typeof department.departResponsible !== 'undefined')
+            department.departResponsible.forEach(responsible => {
+                if(typeof responsible !== 'undefined' && responsible._id.toString() === this._id.toString()){
+                imResponsibleFor.push(department.description);
+                }
+            });
     });
-  });
 
   return imResponsibleFor.join(' | ');
 });

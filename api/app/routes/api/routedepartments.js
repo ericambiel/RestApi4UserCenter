@@ -72,42 +72,25 @@ router.post(
   auth.required, // Validação JWT
   routePermission.check(permissionModule.DEPARTMENT.insert), // Permissão de acesso a rota 
   async (req, res, next) => {
-      try{
-        const { description, departResponsible } = req.body.department;
+    try{
+      const {description, departResponsible} = req.body.department;
 
-        await Department.create({ description,  departResponsible } )
-        .then(async(department) => {
-            //department.relatesDepartUserTables();
-            if ( departResponsible !== undefined )
-                await Promise.all(departResponsible.map(responsible => { // TODO: Migrar bloco para modelo Department
-                  // TODO: verifica se ID sendo inserido já não existe em campo
-                  User.findById(responsible)
-                    .then(async (user) => {        
-                      let isIdUserExists = false;
-
-                      // Verifica se ID já existem em "departments"
-                      user.departments.forEach(department => {
-                        if(department.toString() === responsible) {
-                          isIdUserExists = true; 
-                          return;
-                        }
-                      });
-                      
-                      // Salva se não existe
-                      if (!isIdUserExists){
-                        user.departments.push(department); // { $push: { departments: department } } 
-                        await user.save().catch((err) => {throw err;});                          
-                      }
-                    })
-                    .catch((err) => {throw err;});
-                }));
-            return department; 
-        })
-        .then( department => { 
-            res.json( { department } ); 
-        })
-        .catch((err) => {throw err;});
-      } catch (err) { return res.status(500).send({ message: err.message}); }
+      await Department.create({ description,  departResponsible } )
+      .then(async (department) => {
+        //department.relatesDepartUserTables();
+        if (departResponsible !== undefined){
+          departResponsible.forEach(user => { // TODO: Migrar bloco para modelo Department
+            User.findByIdAndUpdate(user, { $push: { departments: department } })
+              .catch((err) => { throw err; });
+          });
+        }
+      })
+      .then( department => { 
+        res.json( { department } ); 
+        return department; 
+      })
+      .catch((err) => { throw err; });
+    } catch (err) { return res.status(500).send({ message: err.message}); }
   });
 
 /**
@@ -127,7 +110,7 @@ router.patch(
         id, 
         req.body.department)
           .then(async department => {
-            if(department !== null && Array.isArray( reqDepartResponsible ) ) // TODO: FIX: Esta reinserindo relacionamento em User mesmo se já há.
+            if(department !== null && Array.isArray( reqDepartResponsible ) )
               await Promise.all(reqDepartResponsible.map(async (responsible) => { // TODO: Migrar bloco para modelo Department
                 await User.findById(responsible)
                   .then(async (user) => {
