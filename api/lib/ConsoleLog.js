@@ -1,10 +1,12 @@
 let now;
+let _type;
 
 class ConsoleLog {
-   constructor() {
+   constructor(type) {
+     _type = type === undefined ? '' : type.toString().toLowerCase();
      now = `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
    }
- 
+   
    /**
     * Imprime no console mensagens de erro
     * [INFO] - console.info
@@ -13,9 +15,13 @@ class ConsoleLog {
     * @return {string} Retorna erro ou informação ao STDIO 
     */
    printConsole(message){
-     if (message.indexOf('[INFO]') === '[INFO]') console.info(`${now} [INFO] ${message}`);
-     else if(message.indexOf('[ERROR]') === '[ERROR]') console.info(`${now} [ERROR] ${message}`);
-     else (console.log(`${now} ${message}`));
+     switch (_type) {
+        case 'info': console.info(`${now} [INFO]${message}`); break;
+        case 'error': console.error(`${now} [ERROR]${message}`); break;
+        case 'warn': console.warn(`${now} [WARN]${message}`); break;
+        case 'debug': console.debug(`${now} [WARN]${message}`); break;
+        default: console.log(`${now} ${message}`);
+     }
    }
 }
 

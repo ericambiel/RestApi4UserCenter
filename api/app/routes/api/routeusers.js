@@ -6,8 +6,8 @@ var auth = require('../../middlewares/auth'); // Verifica validade do TOKEN
 const routePermission = require('../../middlewares/PermissionRoutes'); // Suporte a permissões a rota 
 const permissionModule = require('../../../config/PermissionModule'); // Tipos de permissões
 
-// const mongoose = require('mongoose');
-// const User = mongoose.model('User');
+const LDAP = require('../../../lib/LDAP');
+// const MockUsersAD = require('../../test/mocks/LDAPUsers');
 
 /**
  * Compara valores de dois arrays e retorna valores
@@ -23,11 +23,28 @@ function missingInArray(previousArray, currentArray){
   }
 }
 
-/* Listar todos os Usuário */
+/**
+ * Retorna usuários do Microsoft AD em um server LDAP.
+ */
+router.get(
+  '/ldap_ad_users', 
+  auth.required, 
+  routePermission.check(permissionModule.RH.select), 
+  async(req, res, next) => {
+    try {
+      // res.json(new MockUsersAD().usersADString); 
+      res.json(await new LDAP().getUserAD().catch(err => { throw err } ));
+    } catch(err) { next(err); }
+  }
+)
+
+/**
+ * Listar todos os Usuário
+ */
 router.get(
   '/', 
   auth.required, 
-  routePermission.check([ [permissionModule.RH.select], [permissionModule.ROOT.select] ]), 
+  routePermission.check(permissionModule.RH.select), 
   (req, res, next) => {
     User
       .find() // Trás todos
@@ -36,7 +53,9 @@ router.get(
     .catch(next)
   });
 
-  /* Listar usuário (Ele mesmo) */
+/**
+ * Listar usuário (Ele mesmo)
+ */
 router.get(
   '/myself', 
   auth.required, 
@@ -55,7 +74,7 @@ router.get(
 router.post(
   '/', 
   auth.required, 
-  routePermission.check([ [permissionModule.RH.insert], [permissionModule.ROOT.insert] ]), 
+  routePermission.check(permissionModule.RH.insert), 
   (req, res, next) => {
 
     let user = new User(req.body.user);
@@ -97,7 +116,7 @@ router.post(
 router.delete(
   '/:id', 
   auth.required, 
-  routePermission.check([ [permissionModule.RH.update], [permissionModule.ROOT.delete] ]), 
+  routePermission.check(permissionModule.RH.update), 
   (req, res, next) => {
     const { id } = req.params;
 
@@ -129,7 +148,7 @@ router.delete(
 router.patch(
   '/:id', 
   auth.required, 
-  routePermission.check([ [permissionModule.RH.update], [permissionModule.ROOT.update] ]), 
+  routePermission.check(permissionModule.RH.update), 
   (req, res, next) => {
     const { id } = req.params;
     const  reqDepartments  = req.body.user.departments;

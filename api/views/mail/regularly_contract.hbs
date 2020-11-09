@@ -812,7 +812,7 @@ END OF IMPORTANT
       border-radius: 8px;
       border-collapse: separate;
       text-align: center;
-      width: 170;
+      width: 265;
     }
   </style>
 </head>
@@ -986,13 +986,17 @@ END OF IMPORTANT
                                         <tr class="ui-draggable">
                                           <td align="center"
                                             class="esd-block-text esd-frame esd-hover esdev-disable-select esd-block">
-                                            <h2>Contrato vencido</h2>
+                                            <h2>Aviso regular de Contrato à vencer (Expirar)</h2>
                                           </td>
                                         </tr>
                                         <tr class="ui-draggable">
                                           <td align="center"
                                             class="esd-block-text esd-frame esd-hover esdev-disable-select esd-block">
-                                            <p>O contrato abaixo venceu, seu estado foi alterado para Expirado.
+                                            <p>
+                                              Lembrete de contrato à vencer, nos pediu que te avisássemos a 
+                                              cada {{ regularitySendMail }} dia(s). Fique tranquilo te avisaremos 
+                                              novamente em {{ dateSendNextEmail }} caso o contrato não esteja vencido. 
+                                              Obrigado.
                                             </p>
                                           </td>
                                         </tr>
@@ -1081,8 +1085,7 @@ END OF IMPORTANT
                                     <table class="table2" width="100%" cellspacing="0" cellpadding="0">
                                       <tbody>
                                         <tr>
-                                          <th colspan="2"><i>Status</i> Anterior:</th>
-                                          <td></td>
+                                          <th><i>Status:</i></th>
                                           <td>{{ status }}</td>
                                         </tr>
                                       </tbody>

@@ -34,11 +34,11 @@ class Printer {
         docname: `Etiqueta Ativo: ${docName}`,
         type: 'RAW',
         success: jobID => {
-          new ConsoleLog().printConsole(`[INFO][PRINT_ZPL] ZPL enviado ao POOL de '${process.env.ZPL_PRINTER}', impressão: ${docName}.`);          
+          new ConsoleLog('info').printConsole(`[PRINT_ZPL] ZPL enviado ao POOL de '${process.env.ZPL_PRINTER}', impressão: ${docName}.`);          
           _infoPrint = jobID;
         },
         error: err => {
-          new ConsoleLog().printConsole(`[ERRO][PRINT_ZPL] ZPL em '${process.env.ZPL_PRINTER}' Falha ao imprimir: ${err.message}`);
+          new ConsoleLog('error').printConsole(`[PRINT_ZPL] ZPL em '${process.env.ZPL_PRINTER}' Falha ao imprimir: ${err.message}`);
           throw err; 
         }
       });

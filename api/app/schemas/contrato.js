@@ -9,15 +9,17 @@ const Documento = require('./documento');
  */
 const OptionsSchema = new Schema({
     sendEmailAlerts: { type: Boolean, default: true },
+    regularitySendMail: { type: Number, default: 30 }
 },{ _id : false });
 
 /**
  * Record of emails sent.
  */
 const LogEmailSchema = new Schema({
-    expiredEmailSent: { type: Boolean }, // Contrato vencido enviado
-    expiringEmailSent: { type: Boolean }, // Contrato pra vencer
-    indeterminateEmailSent: { type: Boolean }, // Contrato indeterminado
+    expiredEmailSent: { type: Boolean },            // Contrato vencido enviado
+    expiringEmailSent: { type: Boolean },           // Contrato pra vencer
+    regularlyEmailSent: { type: Boolean },          // Email regular enviado após algum email de ALERTA
+    indeterminateEmailSent: { type: Boolean },      // Contrato indeterminado
     message: {type: String}
 },{ timestamps: { updatedAt: false } , _id : false });
 
@@ -43,11 +45,13 @@ const ContratoSchema = new Schema({
     documentoList:  [ Documento.schema ], 
     natureza: { type: String },
     options: { type: OptionsSchema, default: { OptionsSchema } },
-    logEmail: [ LogEmailSchema ]
+    logEmail: [ LogEmailSchema ],
+    dateToSendEmail: { type: Date, default: null}
 }, { timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true }, collection: 'Contratos' });
 
 ContratoSchema.virtual('id').get(function() {
     /* 
+        _id = 5220bb43 b754af 4118 000001
         timestamp → 5220bb43 Generation timestamp (4 bytes)
         machine → b754af First 3 bytes of the MD5 hash of the machine host name, or of the mac/network address, or the virtual machine id.
         pid → 4118 First 2 bytes of the process (or thread) ID generating the ObjectId.
@@ -77,38 +81,5 @@ ContratoSchema.virtual('id').get(function() {
 //             }
 //     }catch(err){ console.log(err); }
 // });
-
-// Objeto sem segmentação por classes
-// # A sample schema, like what we'd get from json.load()
-// schema = {
-//     "type" : "object",
-//     "properties" : {
-//         "id": { "type": "number" },
-//         "objeto": { "type": "string" },
-//         "estabFiscal": { "type": "string" },
-//         "parceiro": { "type": "string" },
-//         "cnpj": { "type": "number" },
-//         "status": { "type": "string" },
-//         "situacao": { "type": "string" },
-//         "valTotal": { "type": "number" },
-//         "valMensal": { "type": "number" },
-//         "dataInicio": { "type": "date" },
-//         "dataFim": { "type": "date" },
-//         "deptoPartList": { "type": [ {"departamento": { "type": "string" } } ] },
-//         "indReajuste": { "type": "string" },
-//         "diaAntecedencia": { "type": "number" },
-//         "obs": { "type": "string" },
-//         "historico": { "type": "string" },
-//         "anaJuridico": { "type": "boolean" },
-//         "documentoList": { "type" : [ 
-//                                   { "nome": { "type": "string" } },
-//                                   { "diretorio": { "type": "string" } },
-//                                   { "tipo": { "type": "string" } },
-//                                   { "numAditivo": { "type": "number" } },
-//                                   { "dataInsert": { "type": "date" } } 
-//                                 ] 
-//                        }
-//     },
-// }
 
 module.exports = mongoose.model('Contrato', ContratoSchema); // Exporta ao objeto criado na primeira vez o modelo criado

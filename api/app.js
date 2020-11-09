@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 
 const mongoose = require('mongoose');
 
-require('dotenv-safe').config();
+require('dotenv-safe').config({allowEmptyValues: true});
 
 require('./lib/passport'); // Verificar se usuário é valido/BD
 //const cors = require('cors'); //Habilitar caso esteja em DEV

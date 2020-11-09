@@ -1,17 +1,20 @@
-require("dotenv-safe").config(); // Configurações de ambiente.
+require('dotenv-safe').config({allowEmptyValues: true}); // Configurações de ambiente.
 require('./estabFiscal'); // Necessários caso use referencia ao Model
 const Departments = require('./department');
 const Permissions = require('./permission');
-const mongoose = require('mongoose') // Associa o mesmo objeto instanciado "mongoose" na primeira vez
+const mongoose = require('mongoose'); // Associa o mesmo objeto instanciado "mongoose" na primeira vez
 const Schema = mongoose.Schema;
-const validator = require('validator') // Classe usada para validações de dados
+const validator = require('validator'); // Classe usada para validações de dados
 const uniqueValidator = require('mongoose-unique-validator'); // Verifica se é o único no banco
 const bcrypt = require('../../../node_modules/bcrypt/bcrypt'); // Criptografa senha a partir de um token.
 const mongooseHidden = require('mongoose-hidden')();
 var jwt = require('jsonwebtoken'); // Gerador Token JWT. 
-const ConsoleLog = require('../../lib/ConsoleLog');
+// const ConsoleLog = require('../../lib/ConsoleLog');
 
 const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
+    id: {
+      type: String,
+      hide: true }, // Esconde campo em um request
     userName: { 
         type: String, 
         required: [true, 'Não pode estar em branco'],
@@ -31,7 +34,7 @@ const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
         unique: true, // Não deixa outro documento ter mesmo valor para este campo
         index: true,
         lowercase: true, // salva oque foi digitado em minusculo
-        validate: (value) => { return validator.isEmail(value) } }, // Verifica se email é valido antes de salvar
+        validate: (value) => { return validator.isEmail(value); } }, // Verifica se email é valido antes de salvar
     phone: {
         type: [ Number ] },
     birthDate: {
@@ -72,7 +75,25 @@ const UserSchema = new Schema({ // Define o Schema a ser usado pelo mongoDB
         // TODO: Implantar AKA Session Token
     },
     
-}, {timestamps: true, collection: 'Users'} )
+}, {timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true }, collection: 'Users'} );
+
+/** Campos virtuais, não estão no BD */
+UserSchema.virtual('imResponsibleFor').get(function() {
+  // TODO Verificar controler contrato e usar essa logica ao invés do método defino lá
+  let imResponsibleFor = [];
+  
+  if (typeof department !== 'undefined')
+    this.departments.forEach(department => {
+        if (typeof department.departResponsible !== 'undefined')
+            department.departResponsible.forEach(responsible => {
+                if(typeof responsible !== 'undefined' && responsible._id.toString() === this._id.toString()){
+                imResponsibleFor.push(department.description);
+                }
+            });
+    });
+
+  return imResponsibleFor.join(' | ');
+});
 
 /** Criptografa a senha ao criar usuário */
 UserSchema.methods.setPassword = function(password) {
@@ -88,7 +109,7 @@ UserSchema.methods.setPassword = function(password) {
 UserSchema.methods.validPassword = function(password) {
     // Síncrono
     const result = bcrypt.compareSync(password, this.hashedPass);
-    new ConsoleLog().printConsole(`[INFO][AUTHENTICATION] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
+    // new ConsoleLog('info').printConsole(`[AUTHENTICATION] ${this.userName} - ${result?'Logou no sistema':'Digitou senha incorreta'}`);
     return result;
     
     // TODO: (Assíncrono) verificar como entregar ao endpoint resposta bcrypt de forma assíncrona para evitar bloqueio da thread principal.
@@ -157,8 +178,8 @@ UserSchema.methods.generateJWT = async function() {
     }, process.env.SECRET_JWT, 
     {
         expiresIn: Number(process.env.EXPIRE_USER_TIME) 
-    })
-}
+    });
+};
     
 /** Devolve Autenticação TOKEN JWT + objetos fora do token se precisar */
 UserSchema.methods.toAuthJSON = async function() {    
@@ -173,6 +194,6 @@ UserSchema.methods.toAuthJSON = async function() {
 };
 
 UserSchema.plugin(uniqueValidator, { message: 'Esse valor já existe!' }); // Apply the uniqueValidator plugin to userSchema.
-UserSchema.plugin(mongooseHidden, {defaultHidden: { autoHideJSON: 'false', autoHideObject: 'false' } }) // Biblioteca necessária para esconder campos. 'false' exibe _id
+UserSchema.plugin(mongooseHidden, {defaultHidden: { autoHideJSON: false, autoHideObject: false } }); // Biblioteca necessária para esconder campos. 'false' exibe _id
 
-module.exports = mongoose.model('User', UserSchema)
+module.exports = mongoose.model('User', UserSchema);

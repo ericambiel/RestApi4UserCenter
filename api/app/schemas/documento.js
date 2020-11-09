@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-require('dotenv-safe').config();
+require('dotenv-safe').config({allowEmptyValues: true});
 
 const DocumentoSchema = new mongoose.Schema({
   nome: { type: String },

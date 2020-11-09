@@ -28,6 +28,7 @@
   "homepage": "https://github.com/ericambiel/RestApi4UserCenter#readme",
   "dependencies": {
     "bcrypt": "^5.0.0",
+    "binary": "^0.3.0",
     "connect-multiparty": "^2.2.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -43,8 +44,9 @@
     "jade": "^1.11.0",
     "json-schema-defaults": "^0.4.0",
     "jsonwebtoken": "^8.5.1",
-    "moment": "^2.24.0",
-    "mongoose": "^5.9.6",
+    "ldapjs": "^1.0.2",
+    "moment": "^2.26.0",
+    "mongoose": "^5.9.15",
     "mongoose-hidden": "^1.8.1",
     "mongoose-unique-validator": "^2.0.3",
     "nodemailer": "^6.4.6",
@@ -57,11 +59,11 @@
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-import": "^2.21.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.4"
   },
   "bin": "./api/app/bin/www",
   "pkg": {
@@ -71,7 +73,7 @@
       "api/public/**"
     ],
     "targets": [
-      "node13"
+      "node14"
     ]
   }
 }

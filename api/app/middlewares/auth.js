@@ -1,5 +1,4 @@
 const jwt = require('express-jwt');
-require('dotenv-safe').config();
 
 /**
  * Ira pegar do cabeçalho da requisição enviado pelo cliente

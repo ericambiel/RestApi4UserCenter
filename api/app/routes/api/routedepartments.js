@@ -10,57 +10,57 @@ const permissionModule = require('../../../config/PermissionModule'); // Tipos d
  * Lista todos os departamentos.
  */
 router.get(
-    '/',
-    auth.required,
-    routePermission.check( [ [permissionModule.DEPARTMENT.select],[permissionModule.ROOT.select] ] ),
-    (req, res, next) => {
-        Department.find().populate(['departResponsible'])
-            .then(departments => res.json(departments))
-            .catch(next)
-    }
-)
+  '/',
+  auth.required,
+  routePermission.check(permissionModule.DEPARTMENT.select),
+  (req, res, next) => {
+    Department.find().populate(['departResponsible'])
+      .then(departments => res.json(departments))
+      .catch(next);
+  }
+);
 
 /**
  * Listar por ID.
  */
 router.get(
-    '/:id',
-    auth.required,
-    routePermission.check( [ [permissionModule.DEPARTMENT.select],[permissionModule.ROOT.select] ] ),
-    (req, res, next) => {
-        const { id } = req.params;
-        Department.findById(id).populate(['departResponsible'])
-            .then(department => {
-                if( department !== null) res.json(department)
-                else res.json({ message: 'ID Não encontrado'});
-            })
-            .catch(next)
-    }
-)
+  '/:id',
+  auth.required,
+  routePermission.check(permissionModule.DEPARTMENT.select),
+  (req, res, next) => {
+    const { id } = req.params;
+    Department.findById(id).populate(['departResponsible'])
+      .then(department => {
+          if( department !== null) res.json(department);
+          else res.json({ message: 'ID Não encontrado'});
+      })
+      .catch(next);
+  }
+);
 
 
 /** 
  * Remove departamento e relacionamentos (_id - departamento) em Users.                   
  */
 router.delete(
-    '/:id',
-    auth.required,
-    routePermission.check( [ [permissionModule.DEPARTMENT.delete],[permissionModule.ROOT.delete] ] ),
-    (req, res, next) => {
-        const { id } = req.params;
-    
-        Department.findByIdAndDelete( id )
-        .then( department => {
-            if( department !== null){
-                res.json( { department } );
-                // department.unrelateDepartUserTables();
-                department.departResponsible.forEach( user => { // TODO: Migrar bloco para modelo Department
-                    User.findByIdAndUpdate(user, { $pull: { departments: department._id } }) // Procura em Department e remove
-                        .catch(next);
-                })
-            } else res.json({ message: 'ID Não encontrado'}); 
-        }
-        ).catch(next); 
+  '/:id',
+  auth.required,
+  routePermission.check(permissionModule.DEPARTMENT.delete),
+  (req, res, next) => {
+    const { id } = req.params;
+      //TODO: FIX: Antes de apagar _id do responsável verificar em User se só a um depto associado ao usuário..
+      Department.findByIdAndDelete( id )
+      .then( department => {
+        if( department !== null){
+          res.json( { department } );
+          // department.unrelateDepartUserTables();
+          department.departResponsible.forEach( user => { // TODO: Migrar bloco para modelo Department
+            User.findByIdAndUpdate(user, { $pull: { departments: department._id } }) // Procura em Department e remove
+              .catch(next);
+        });
+        } else res.json({ message: 'ID Não encontrado'}); 
+      })
+      .catch(next); 
     }
 );
 
@@ -68,87 +68,80 @@ router.delete(
  * Insere novo Departamento e relaciona Departamento oas usuários apontados.
  */
 router.post(
-        '/', // Rota
-        auth.required, // Validação JWT
-        routePermission.check( [ [permissionModule.DEPARTMENT.insert],[permissionModule.ROOT.insert] ] ), // Permissão de acesso a rota 
-        async (req, res, next) => {
-            try{
-                const { description, departResponsible } = req.body.department;
-    
-                await Department.create({ description,  departResponsible } )
-                .then( department => { 
-                    res.json( { department } ); 
-                    return department; 
-                })
-                .then( department => {
-                    //department.relatesDepartUserTables();
-                    if ( departResponsible !== undefined ){
-                        departResponsible.forEach(user => { // TODO: Migrar bloco para modelo Department
-                            User.findByIdAndUpdate(user, { $push: { departments: department } })
-                                .catch(next);
-                        });
-                    }
-                }).catch(next);
+  '/', // Rota
+  auth.required, // Validação JWT
+  routePermission.check(permissionModule.DEPARTMENT.insert), // Permissão de acesso a rota 
+  async (req, res, next) => {
+    try{
+      const {description, departResponsible} = req.body.department;
 
-                // Exemplo, mesma coisa do de cima
-                // const department = new Department({ description, departResponsible });
-                // department.save()
-                // .then( () => res.json({ department }))
-                // .then( () =>{
-                //     // department.relatesUserTables()
-                //     if ( departResponsible !== undefined ){
-                //         departResponsible.forEach(user => { // TODO: Migrar bloco para modelo Department
-                //             User.findByIdAndUpdate(user, { $push: { departments: department } })
-                //                 .catch(next) 
-                //         });
-                //     }
-                // })
-                // .catch(next);
-            } catch (err) {
-                return res.status(500).send({ message: err.message})
-            }
-        });
+      await Department.create({ description,  departResponsible } )
+      .then(async (department) => {
+        //department.relatesDepartUserTables();
+        if (departResponsible !== undefined){
+          departResponsible.forEach(user => { // TODO: Migrar bloco para modelo Department
+            User.findByIdAndUpdate(user, { $push: { departments: department } })
+              .catch((err) => { throw err; });
+          });
+        }
+      })
+      .then( department => { 
+        res.json( { department } ); 
+        return department; 
+      })
+      .catch((err) => { throw err; });
+    } catch (err) { return res.status(500).send({ message: err.message}); }
+  });
 
 /**
  * Atualiza informações de um departamento
  */
-//TODO: FIX: Antes de apagar _id do responsável verificar em User se só a um depto associado ao usuário..
+
 router.patch(
-    '/:id', 
-    auth.required, 
-    routePermission.check([ [permissionModule.DEPARTMENT.update],[permissionModule.ROOT.update] ]), 
-    async (req, res, next) => {
-        const { id } = req.params;
-        const reqDepartResponsible = req.body.department.departResponsible;
-        
-        try{
-            await Department.findByIdAndUpdate(
-                id, 
-                req.body.department)
-                    .then(department => {
-                        //department.relatesDepartUserTables();
-                        if ( department !== null ){
-                        // TODO: Bloco remove departamento do usuário caso deixe de ser responsável, não é mais a politica mais, apagar!!! 
-                        //     department.departResponsible.forEach(async user => { // TODO: Migrar bloco para modelo Department
-                        //         await User.findByIdAndUpdate(user, { $pull: { departments: department._id } })
-                        //             .catch(next); // TODO: FIX: Não esta indo para response quando há erros
-                        //         });
-                            if( Array.isArray( reqDepartResponsible ) ) // TODO: FIX: Esta reinserindo relacionamento em User mesmo se já há.
-                                reqDepartResponsible.forEach(responsible => {
-                                    User.findByIdAndUpdate(responsible, { $push: { departments: department._id } })
-                                        .catch(next); // TODO: FIX: Não esta indo para response quando há erros
-                                    });
-                        }
-                        return department 
-                    })
-                    .then(department => {
-                        department 
-                        ? res.json({ department: { id: department._id, message:'Departamento alterado'} }) 
-                        : res.status(400).json({ department: { message: 'ID não encontrado' } });
+  '/:id', 
+  auth.required, 
+  routePermission.check(permissionModule.DEPARTMENT.update), 
+  async (req, res, next) => {
+    const { id } = req.params;
+    const reqDepartResponsible = req.body.department.departResponsible;
+    
+    try{
+      await Department.findByIdAndUpdate(
+        id, 
+        req.body.department)
+          .then(async department => {
+            if(department !== null && Array.isArray( reqDepartResponsible ) )
+              await Promise.all(reqDepartResponsible.map(async (responsible) => { // TODO: Migrar bloco para modelo Department
+                await User.findById(responsible)
+                  .then(async (user) => {
+                    let isIdUserExists = false;
+
+                    // Verifica se ID já existem em "departments"
+                    user.departments.forEach(department => {
+                      if(department.toString() === id) {
+                        isIdUserExists = true; 
+                        return;
+                      }
                     });
-        }catch(err){
-            return res.status(500).send({ message: err.message})
-        }
+                    
+                    // Salva se não existe
+                    if (!isIdUserExists){
+                      user.departments.push(department); // { $push: { departments: department } } 
+                      await user.save().catch((err) => {throw err;});                          
+                    }
+                  })
+                  .catch((err) => { throw err; });
+              }));
+            return department;
+          })
+          .then(department => {
+              department 
+              ? res.json({ department: { id: department._id, message:'Departamento alterado'} }) 
+              : res.status(400).json({ department: { message: 'ID não encontrado' } });
+          });
+    }catch(err){
+      return res.status(500).send({ message: err.message});
+    }
 });
 
 module.exports = router;
